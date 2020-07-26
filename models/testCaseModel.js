@@ -9,6 +9,10 @@ const testCaseSchema = mongoose.Schema(
       minlength: 5,
       trim: true
     },
+    testSuiteID: {
+      type: String,
+      required: true
+    },
     status: {
       type: String,
       enum: [

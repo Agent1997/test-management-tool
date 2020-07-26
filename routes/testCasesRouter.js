@@ -4,12 +4,13 @@ const testCasesController = require('./../controllers/testCasesController');
 const router = express.Router();
 
 router
-  .route('/')
-  .post(testCasesController.createTestCases)
-  .get(testCasesController.getAllTestCase);
+  .route('/:tsID')
+  // .post(testCasesController.createTestCases)
+  .get(testCasesController.getAllTestCase)
+  .post(testCasesController.createTestCases);
 
 router
-  .route('/:id')
+  .route('/:tsID/:id')
   .get(testCasesController.getTestCase)
   .patch(testCasesController.updateTestCase)
   .delete(testCasesController.deleteTestCase);

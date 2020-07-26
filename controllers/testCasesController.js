@@ -2,9 +2,12 @@ const TestCase = require('./../models/testCaseModel');
 
 exports.createTestCases = async (req, res) => {
   try {
-    const query = TestCase.create(req.body);
+    const body = { ...req.body };
+    body.testSuiteID = req.params.tsID;
 
+    const query = TestCase.create(body);
     const testCase = await query;
+
     res.status(201).json({
       status: 'success',
       data: testCase
@@ -19,7 +22,7 @@ exports.createTestCases = async (req, res) => {
 
 exports.getAllTestCase = async (req, res) => {
   try {
-    const query = TestCase.find();
+    const query = TestCase.find({ testSuiteID: req.params.tsID });
 
     const testCases = await query;
     res.status(200).json({
@@ -37,7 +40,10 @@ exports.getAllTestCase = async (req, res) => {
 
 exports.getTestCase = async (req, res) => {
   try {
-    const query = TestCase.findById(req.params.id);
+    const query = TestCase.find({
+      testSuiteID: req.params.tsID,
+      _id: req.params.id
+    });
 
     const testCase = await query;
     // console.log(req.params);
@@ -55,12 +61,20 @@ exports.getTestCase = async (req, res) => {
 
 exports.updateTestCase = async (req, res) => {
   try {
-    const query = TestCase.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
+    const query = TestCase.findOneAndUpdate(
+      {
+        testSuiteID: req.params.tsID,
+        _id: req.params.id
+      },
+      req.body,
+      {
+        new: true,
+        runValidators: true
+      }
+    );
 
     const testCase = await query;
+
     res.status(200).json({
       status: 'success',
       data: testCase
@@ -75,7 +89,10 @@ exports.updateTestCase = async (req, res) => {
 
 exports.deleteTestCase = async (req, res) => {
   try {
-    const query = TestCase.findByIdAndDelete(req.params.id);
+    const query = TestCase.findOneAndDelete({
+      testSuiteID: req.params.tsID,
+      _id: req.params.id
+    });
 
     await query;
     res.status(200).json({
