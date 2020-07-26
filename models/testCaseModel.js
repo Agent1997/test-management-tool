@@ -11,7 +11,6 @@ const testCaseSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      required: true,
       enum: [
         'NOT STARTED',
         'IN PROGRESS',
@@ -65,8 +64,11 @@ const testCaseSchema = mongoose.Schema(
     },
     actualResults: {
       type: String,
-      maxlength: 5000,
-      required: true
+      maxlength: 5000
+    },
+    notes: {
+      type: String,
+      maxlength: 5000
     },
     parentTS: {
       type: String,
