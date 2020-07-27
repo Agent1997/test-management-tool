@@ -1,12 +1,20 @@
 const TestCase = require('./../models/testCaseModel');
+const TestSuite = require('./../models/testSuiteModel');
 
 exports.createTestCases = async (req, res) => {
   try {
     const body = { ...req.body };
     body.testSuiteID = req.params.tsID;
 
-    const query = TestCase.create(body);
-    const testCase = await query;
+    const queryTC = TestCase.create(body);
+    const testCase = await queryTC;
+
+    //for adding a test case reference to test suite
+    const testSuite = await TestSuite.findById(req.params.tsID);
+    testSuite.testCases.push(testCase._id);
+    await TestSuite.findByIdAndUpdate(req.params.tsID, {
+      testCases: testSuite.testCases
+    });
 
     res.status(201).json({
       status: 'success',
@@ -20,6 +28,7 @@ exports.createTestCases = async (req, res) => {
   }
 };
 
+// this method can be removed
 exports.getAllTestCase = async (req, res) => {
   try {
     const query = TestCase.find({ testSuiteID: req.params.tsID });
@@ -95,6 +104,14 @@ exports.deleteTestCase = async (req, res) => {
     });
 
     await query;
+
+    //for adding a test case reference to test suite
+    const testSuite = await TestSuite.findById(req.params.tsID);
+    testSuite.testCases.splice(testSuite.testCases.indexOf(req.params.id), 1);
+    await TestSuite.findByIdAndUpdate(req.params.tsID, {
+      testCases: testSuite.testCases
+    });
+
     res.status(200).json({
       status: 'success'
     });

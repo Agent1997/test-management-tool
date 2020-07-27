@@ -60,7 +60,10 @@ exports.getAllTestSuites = async (req, res) => {
 
 exports.getTestSuite = async (req, res) => {
   try {
-    const query = TestSuite.findById(req.params.id);
+    const query = TestSuite.findById(req.params.id).populate({
+      path: 'testCases',
+      select: 'status title _id testerName'
+    });
 
     const suite = await query;
 

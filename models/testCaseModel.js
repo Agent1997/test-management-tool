@@ -43,36 +43,36 @@ const testCaseSchema = mongoose.Schema(
     },
     preRequisites: {
       type: String,
-      maxlength: 5000,
+      maxlength: 6000,
       default: null
     },
     testSteps: {
       type: String,
-      maxlength: 5000,
+      maxlength: 6000,
       required: true
     },
     testData: {
       type: String,
-      maxlength: 5000,
+      maxlength: 6000,
       default: null
     },
     postConditions: {
       type: String,
-      maxlength: 5000,
+      maxlength: 6000,
       default: null
     },
     expectedResults: {
       type: String,
-      maxlength: 5000,
+      maxlength: 6000,
       required: true
     },
     actualResults: {
       type: String,
-      maxlength: 5000
+      maxlength: 6000
     },
     notes: {
       type: String,
-      maxlength: 5000
+      maxlength: 6000
     },
     parentTS: {
       type: String,
