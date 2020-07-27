@@ -13,18 +13,18 @@ const testCaseSchema = mongoose.Schema(
       type: String,
       required: true
     },
-    status: {
-      type: String,
-      enum: [
-        'NOT STARTED',
-        'IN PROGRESS',
-        'PASS',
-        'FAIL',
-        'BLOCKED',
-        'OUT OF SCOPE'
-      ],
-      default: 'NOT STARTED'
-    },
+    // status: {
+    //   type: String,
+    //   enum: [
+    //     'NOT STARTED',
+    //     'IN PROGRESS',
+    //     'PASS',
+    //     'FAIL',
+    //     'BLOCKED',
+    //     'OUT OF SCOPE'
+    //   ],
+    //   default: 'NOT STARTED'
+    // },
     testerName: {
       type: String,
       required: true,
@@ -32,9 +32,7 @@ const testCaseSchema = mongoose.Schema(
       minlength: 5,
       trim: true
     },
-    relatedProblems: {
-      type: [String]
-    },
+    relatedProblems: [{ type: mongoose.Schema.Types.ObjectId }],
     attachedImages: {
       type: [String]
     },

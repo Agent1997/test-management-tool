@@ -6,8 +6,9 @@ const router = express.Router();
 router
   .route('/:tsID')
   // .post(testCasesController.createTestCases)
-  .get(testCasesController.getAllTestCase)
-  .post(testCasesController.createTestCases);
+  .get(testCasesController.getAllTestCase);
+
+router.route('/').post(testCasesController.createTestCases);
 
 router
   .route('/:tsID/:id')

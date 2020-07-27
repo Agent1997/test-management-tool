@@ -4,15 +4,15 @@ const TestSuite = require('./../models/testSuiteModel');
 exports.createTestCases = async (req, res) => {
   try {
     const body = { ...req.body };
-    body.testSuiteID = req.params.tsID;
+    body.testSuiteID = req.body.tsID;
 
     const queryTC = TestCase.create(body);
     const testCase = await queryTC;
 
     //for adding a test case reference to test suite
-    const testSuite = await TestSuite.findById(req.params.tsID);
+    const testSuite = await TestSuite.findById(req.body.tsID);
     testSuite.testCases.push(testCase._id);
-    await TestSuite.findByIdAndUpdate(req.params.tsID, {
+    await TestSuite.findByIdAndUpdate(req.body.tsID, {
       testCases: testSuite.testCases
     });
 

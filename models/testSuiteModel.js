@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const TestCase = require('./testCaseModel');
 
 const testSuiteSchema = mongoose.Schema(
   {
@@ -36,7 +35,8 @@ const testSuiteSchema = mongoose.Schema(
       trim: true
     },
     testCases: [{ type: mongoose.Schema.Types.ObjectId, ref: 'TestCase' }],
-    scheduledTest: [{ type: mongoose.Schema.Types.ObjectId }]
+    scheduledTest: [{ type: mongoose.Schema.Types.ObjectId }],
+    relatedProblems: [{ type: mongoose.Schema.Types.ObjectId }]
   },
   { timestamps: true }
 );

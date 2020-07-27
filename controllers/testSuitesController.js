@@ -41,7 +41,7 @@ exports.updateTestSuite = async (req, res) => {
 
 exports.getAllTestSuites = async (req, res) => {
   try {
-    const query = TestSuite.find();
+    const query = TestSuite.find().select('status version _id title creator');
 
     const suite = await query;
 
