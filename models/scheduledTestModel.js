@@ -9,6 +9,10 @@ const sheduledTestSchema = mongoose.Schema(
       minlength: 5,
       trim: true
     },
+    testSuiteID: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true
+    },
     version: {
       type: Number,
       max: 100,
@@ -46,6 +50,7 @@ const sheduledTestSchema = mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           required: true
         },
+        _id: false,
         tcStatus: {
           type: String,
           enum: [

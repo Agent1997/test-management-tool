@@ -1,5 +1,6 @@
 const TestSuite = require('./../models/testSuiteModel');
 
+//MVP
 exports.createTestSuite = async (req, res) => {
   try {
     const query = TestSuite.create(req.body);

@@ -4,15 +4,17 @@ const TestSuite = require('./../models/testSuiteModel');
 exports.scheduleTest = async (req, res) => {
   try {
     const testCasesObj = await TestSuite.findById(req.body.tsID).select(
-      'testCases'
+      'testCases title _id'
     );
 
-    const { testCases } = testCasesObj;
+    const { testCases, title, _id } = testCasesObj;
     const testCaseArr = testCases.map(tcID => {
       return { tcID };
     });
     const { body } = req;
     body.testCases = testCaseArr;
+    body.title = title;
+    body.testSuiteID = _id;
     const query = ScheduledTest.create(body);
 
     const scheduledTest = await query;
