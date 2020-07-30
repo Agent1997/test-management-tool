@@ -36,6 +36,7 @@ const testSuiteSchema = mongoose.Schema(
     },
     testCases: [{ type: mongoose.Schema.Types.ObjectId, ref: 'TestCase' }],
     scheduledTest: [{ type: mongoose.Schema.Types.ObjectId }],
+    // scheduledTest: [String],
     relatedProblems: [{ type: mongoose.Schema.Types.ObjectId }]
   },
   { timestamps: true }

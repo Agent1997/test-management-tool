@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
+const TestSuite = require('./testSuiteModel');
 
-const sheduledTestSchema = mongoose.Schema(
+const scheduledTestSchema = mongoose.Schema(
   {
     title: {
       type: String,
@@ -19,7 +20,7 @@ const sheduledTestSchema = mongoose.Schema(
       default: 0
     },
     status: {
-      type: [String],
+      type: String,
       enum: [
         'NOT STARTED',
         'IN PROGRESS',
@@ -68,7 +69,7 @@ const sheduledTestSchema = mongoose.Schema(
     priority: {
       type: Number,
       enum: [0, 1, 2, 3, 4, 5],
-      default: 5
+      default: 0
     }
   },
   {
@@ -76,6 +77,18 @@ const sheduledTestSchema = mongoose.Schema(
   }
 );
 
-const ScheduledTest = mongoose.model('ScheduledTest', sheduledTestSchema);
+scheduledTestSchema.post('save', async function() {
+  try {
+    const testSuite = await TestSuite.findById(this.testSuiteID);
+    testSuite.scheduledTest.push(this._id);
+    await TestSuite.findByIdAndUpdate(this.testSuiteID, {
+      scheduledTest: testSuite.scheduledTest
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+const ScheduledTest = mongoose.model('ScheduledTest', scheduledTestSchema);
 
 module.exports = ScheduledTest;
