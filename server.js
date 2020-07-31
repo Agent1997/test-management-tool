@@ -8,7 +8,6 @@ const options = {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: false,
-  // eslint-disable-next-line prettier/prettier
   useUnifiedTopology: true
 };
 
@@ -22,11 +21,6 @@ const dbConnect = async () => {
 };
 
 dbConnect();
-
-// console.log(typeof connection);
-// connection.on('connecting', () => {
-//   console.log('trying to connect');
-// });
 
 app.listen(process.env.PORT, '127.0.0.1', () => {
   console.log('Server Listening');

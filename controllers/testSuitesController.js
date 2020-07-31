@@ -1,98 +1,68 @@
 const TestSuite = require('./../models/testSuiteModel');
 
+const catchAsync = require('./../utils/catchAsync');
+
 //MVP
-exports.createTestSuite = async (req, res) => {
-  try {
-    const query = TestSuite.create(req.body);
+exports.createTestSuite = catchAsync(async (req, res, next) => {
+  req.body.modifiedBy = req.body.creator;
+  const query = TestSuite.create(req.body);
+  const suite = await query;
+  res.status(201).json({
+    status: 'success',
+    data: suite
+  });
+});
 
-    const suite = await query;
+/*
+Below functions will be updated
+*/
 
-    res.status(201).json({
-      status: 'success',
-      data: suite
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: 'failed',
-      data: err
-    });
-  }
-};
+exports.updateTestSuite = catchAsync(async (req, res, next) => {
+  const query = TestSuite.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true
+  });
 
-exports.updateTestSuite = async (req, res) => {
-  try {
-    const query = TestSuite.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
+  const suite = await query;
 
-    const suite = await query;
+  res.status(200).json({
+    status: 'success',
+    data: suite
+  });
+});
 
-    res.status(200).json({
-      status: 'success',
-      data: suite
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: 'failed',
-      data: err
-    });
-  }
-};
+exports.getAllTestSuites = catchAsync(async (req, res, next) => {
+  const query = TestSuite.find().select('status version _id title creator');
 
-exports.getAllTestSuites = async (req, res) => {
-  try {
-    const query = TestSuite.find().select('status version _id title creator');
+  const suite = await query;
 
-    const suite = await query;
+  res.status(200).json({
+    status: 'success',
+    count: suite.length,
+    data: suite
+  });
+});
 
-    res.status(200).json({
-      status: 'success',
-      count: suite.length,
-      data: suite
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: 'failed',
-      data: err
-    });
-  }
-};
+exports.getTestSuite = catchAsync(async (req, res, next) => {
+  const query = TestSuite.findById(req.params.id).populate({
+    path: 'testCases',
+    select: 'status title _id testerName'
+  });
 
-exports.getTestSuite = async (req, res) => {
-  try {
-    const query = TestSuite.findById(req.params.id).populate({
-      path: 'testCases',
-      select: 'status title _id testerName'
-    });
+  const suite = await query;
 
-    const suite = await query;
+  res.status(200).json({
+    status: 'success',
+    data: suite
+  });
+});
 
-    res.status(200).json({
-      status: 'success',
-      data: suite
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: 'failed',
-      data: err
-    });
-  }
-};
+exports.deleteTestSuite = catchAsync(async (req, res, next) => {
+  const query = TestSuite.findByIdAndDelete(req.params.id);
 
-exports.deleteTestSuite = async (req, res) => {
-  try {
-    const query = TestSuite.findByIdAndDelete(req.params.id);
+  await query;
 
-    await query;
-
-    res.status(200).json({
-      status: 'success'
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: 'failed',
-      data: err
-    });
-  }
-};
+  res.status(200).json({
+    status: 'success'
+  });
+});

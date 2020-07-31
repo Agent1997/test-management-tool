@@ -11,16 +11,13 @@ const testSuiteSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      // status are not yet final
-      enum: [
-        'NOT STARTED',
-        'IN PROGRESS',
-        'PASS',
-        'FAIL',
-        'BLOCKED',
-        'OUT OF SCOPE'
-      ],
-      default: 'NOT STARTED'
+      enum: ['IN PROGRESS', 'FOR REVIEW', 'IN REVIEW', 'DONE'],
+      default: 'IN PROGRESS'
+    },
+    priority: {
+      type: Number,
+      enum: [0, 1, 2, 3, 4, 5],
+      default: 0
     },
     version: {
       type: Number,
@@ -34,7 +31,13 @@ const testSuiteSchema = mongoose.Schema(
       minlength: 5,
       trim: true
     },
-    testCases: [{ type: mongoose.Schema.Types.ObjectId, ref: 'TestCase' }],
+    modifiedBy: {
+      type: String,
+      maxlength: 100,
+      minlength: 5,
+      trim: true
+    },
+    testCases: [{ type: mongoose.Schema.Types.ObjectId, ref: 'BaseTestCase' }],
     scheduledTest: [{ type: mongoose.Schema.Types.ObjectId }],
     // scheduledTest: [String],
     relatedProblems: [{ type: mongoose.Schema.Types.ObjectId }]

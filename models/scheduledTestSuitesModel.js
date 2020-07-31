@@ -14,10 +14,15 @@ const scheduledTestSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       required: true
     },
-    version: {
-      type: Number,
+    milestone: {
+      type: String,
       max: 100,
-      default: 0
+      required: true
+    },
+    type: {
+      type: String,
+      max: 100,
+      required: true
     },
     status: {
       type: String,
@@ -38,6 +43,20 @@ const scheduledTestSchema = mongoose.Schema(
       minlength: 5,
       trim: true
     },
+    scheduledBy: {
+      type: String,
+      required: true,
+      maxlength: 100,
+      minlength: 5,
+      trim: true
+    },
+    modifiedBy: {
+      type: String,
+      required: true,
+      maxlength: 100,
+      minlength: 5,
+      trim: true
+    },
     relatedProblems: [{ type: mongoose.Schema.Types.ObjectId }],
     attachedImages: {
       type: [String]
@@ -45,31 +64,12 @@ const scheduledTestSchema = mongoose.Schema(
     attachedFiles: {
       type: [String]
     },
-    testCases: [
-      {
-        tcID: {
-          type: mongoose.Schema.Types.ObjectId,
-          required: true
-        },
-        _id: false,
-        tcStatus: {
-          type: String,
-          enum: [
-            'NOT STARTED',
-            'IN PROGRESS',
-            'PASS',
-            'FAIL',
-            'BLOCKED',
-            'OUT OF SCOPE'
-          ],
-          default: 'NOT STARTED'
-        }
-      }
-    ],
+    testCases: [{ type: mongoose.Schema.Types.ObjectId }],
     priority: {
       type: Number,
       enum: [0, 1, 2, 3, 4, 5],
-      default: 0
+      default: 0,
+      required: true
     }
   },
   {

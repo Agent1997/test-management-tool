@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const testCaseSchema = mongoose.Schema(
+const scheduledTestCasesSchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -9,22 +9,18 @@ const testCaseSchema = mongoose.Schema(
       minlength: 5,
       trim: true
     },
-    testSuiteID: {
+    status: {
       type: String,
-      required: true
+      enum: [
+        'NOT STARTED',
+        'IN PROGRESS',
+        'PASS',
+        'FAIL',
+        'BLOCKED',
+        'OUT OF SCOPE'
+      ],
+      default: 'NOT STARTED'
     },
-    // status: {
-    //   type: String,
-    //   enum: [
-    //     'NOT STARTED',
-    //     'IN PROGRESS',
-    //     'PASS',
-    //     'FAIL',
-    //     'BLOCKED',
-    //     'OUT OF SCOPE'
-    //   ],
-    //   default: 'NOT STARTED'
-    // },
     testerName: {
       type: String,
       required: true,
@@ -38,6 +34,15 @@ const testCaseSchema = mongoose.Schema(
     },
     attachedFiles: {
       type: [String]
+    },
+    actualResults: {
+      type: String,
+      maxlength: 6000,
+      default: null
+    },
+    schedultedTestSuiteID: {
+      type: String,
+      required: true
     },
     preRequisites: {
       type: String,
@@ -64,39 +69,18 @@ const testCaseSchema = mongoose.Schema(
       maxlength: 6000,
       required: true
     },
-    actualResults: {
-      type: String,
-      maxlength: 6000
-    },
-    notes: {
-      type: String,
-      maxlength: 6000
-    },
-    parentTS: {
-      type: String,
-      maxlength: 100,
-      default: null
-    },
-    parentST: {
-      type: String,
-      maxlength: 100,
-      default: null
-    },
     priority: {
       type: Number,
       enum: [0, 1, 2, 3, 4, 5],
-      default: 5
-    },
-    dateCreated: {
-      type: Date
-    },
-    dateModified: {
-      type: Date
+      default: 0
     }
   },
   { timestamps: true }
 );
 
-const TestCase = mongoose.model('TestCase', testCaseSchema);
+const ScheduledTestCasesModel = mongoose.model(
+  'ScheduledTestCase',
+  scheduledTestCasesSchema
+);
 
-module.exports = TestCase;
+module.exports = ScheduledTestCasesModel;
