@@ -1,6 +1,7 @@
 const TestSuite = require('./../models/testSuiteModel');
 
 const catchAsync = require('./../utils/catchAsync');
+const AppError = require('./../utils/appError');
 
 //MVP
 exports.createTestSuite = catchAsync(async (req, res, next) => {
@@ -24,6 +25,11 @@ exports.updateTestSuite = catchAsync(async (req, res, next) => {
   });
 
   const suite = await query;
+  if (!suite) {
+    return next(
+      new AppError(`Test Suite with ID ${req.params.id} does not exists`, 404)
+    );
+  }
 
   res.status(200).json({
     status: 'success',
@@ -51,6 +57,12 @@ exports.getTestSuite = catchAsync(async (req, res, next) => {
 
   const suite = await query;
 
+  if (!suite) {
+    return next(
+      new AppError(`Test Suite with ID ${req.params.id} does not exists`, 404)
+    );
+  }
+
   res.status(200).json({
     status: 'success',
     data: suite
@@ -60,7 +72,13 @@ exports.getTestSuite = catchAsync(async (req, res, next) => {
 exports.deleteTestSuite = catchAsync(async (req, res, next) => {
   const query = TestSuite.findByIdAndDelete(req.params.id);
 
-  await query;
+  const suite = await query;
+
+  if (!suite) {
+    return next(
+      new AppError(`Test Suite with ID ${req.params.id} does not exists`, 404)
+    );
+  }
 
   res.status(200).json({
     status: 'success'

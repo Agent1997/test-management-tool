@@ -11,7 +11,8 @@ const baseTestCaseSchema = mongoose.Schema({
   },
   testSuiteID: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   preRequisites: {
     type: String,

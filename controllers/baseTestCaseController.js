@@ -1,6 +1,7 @@
 const TestCase = require('../models/baseTestCaseModel');
 const TestSuite = require('../models/testSuiteModel');
 const catchAsync = require('./../utils/catchAsync.js');
+const AppError = require('./../utils/appError');
 // MVP
 exports.createTestCases = catchAsync(async (req, res, next) => {
   if (!req.body.tsID) {
@@ -41,6 +42,12 @@ exports.getTestCase = catchAsync(async (req, res, next) => {
   });
 
   const testCase = await query;
+
+  if (!testCase[0]) {
+    return next(
+      new AppError(`Test case with ID ${req.params.id} does not exists`, 404)
+    );
+  }
   // console.log(req.params);
   res.status(200).json({
     status: 'success',
@@ -64,6 +71,12 @@ exports.updateTestCase = async (req, res, next) => {
 
     const testCase = await query;
 
+    if (!testCase) {
+      return next(
+        new AppError(`Test case with ID ${req.params.id} does not exists`, 404)
+      );
+    }
+
     res.status(200).json({
       status: 'success',
       data: testCase
@@ -83,7 +96,12 @@ exports.deleteTestCase = async (req, res, next) => {
       _id: req.params.id
     });
 
-    await query;
+    const testCase = await query;
+    if (!testCase) {
+      return next(
+        new AppError(`Test case with ID ${req.params.id} does not exists`, 404)
+      );
+    }
 
     //for adding a test case reference to test suite
     const testSuite = await TestSuite.findById(req.params.tsID);
