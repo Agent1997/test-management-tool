@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const TestSuite = require('./testSuiteModel');
+const AppError = require('./../utils/appError');
 
 const baseTestCaseSchema = mongoose.Schema(
   {
@@ -62,15 +63,30 @@ const baseTestCaseSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-//codes below will be checked later
-// baseTestCaseSchema.post('save', async function() {
-//   //for adding a test case reference to test suite
-//   const testSuite = await TestSuite.findById(this.testSuiteID);
-//   testSuite.testCases.push(this._id);
-//   await TestSuite.findByIdAndUpdate(this.testSuiteID, {
-//     testCases: testSuite.testCases
-//   });
-// });
+baseTestCaseSchema.pre('save', async function(next) {
+  // To check if testSuiteID exist before saving
+  const testSuite = await TestSuite.findById(this.testSuiteID);
+  if (!testSuite) {
+    return next(
+      new AppError(`TestSuiteID: ${this.testSuiteID} does not exist`, 404)
+    );
+  }
+});
+
+baseTestCaseSchema.post('save', async function(doc, next) {
+  //for adding a test case reference to test suite
+  const testSuite = await TestSuite.findById(this.testSuiteID);
+  if (!testSuite) {
+    return next(
+      new AppError(`TestSuiteID: ${this.testSuiteID} does not exist`, 404)
+    );
+  }
+
+  testSuite.testCases.push(this._id);
+  await TestSuite.findByIdAndUpdate(this.testSuiteID, {
+    testCases: testSuite.testCases
+  });
+});
 
 const BaseTestCaseModel = mongoose.model('BaseTestCase', baseTestCaseSchema);
 

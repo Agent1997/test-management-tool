@@ -77,15 +77,11 @@ const scheduledTestSchema = mongoose.Schema(
 );
 
 scheduledTestSchema.post('save', async function() {
-  try {
-    const testSuite = await TestSuite.findById(this.testSuiteID);
-    testSuite.scheduledTest.push(this._id);
-    await TestSuite.findByIdAndUpdate(this.testSuiteID, {
-      scheduledTest: testSuite.scheduledTest
-    });
-  } catch (err) {
-    console.log(err);
-  }
+  const testSuite = await TestSuite.findById(this.testSuiteID);
+  testSuite.scheduledTest.push(this._id);
+  await TestSuite.findByIdAndUpdate(this.testSuiteID, {
+    scheduledTest: testSuite.scheduledTest
+  });
 });
 
 const ScheduledTest = mongoose.model('ScheduledTest', scheduledTestSchema);
