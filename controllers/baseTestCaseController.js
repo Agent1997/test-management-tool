@@ -2,24 +2,17 @@ const TestCase = require('../models/baseTestCaseModel');
 const TestSuite = require('../models/testSuiteModel');
 const catchAsync = require('./../utils/catchAsync.js');
 const AppError = require('./../utils/appError');
-// MVP
+
 exports.createTestCases = catchAsync(async (req, res, next) => {
-  if (!req.body.tsID) {
-    return res.status(400).json({
-      statusCode: 400,
-      message: 'tsID is required'
-    });
-  }
-
-  const body = { ...req.body };
-  body.testSuiteID = req.body.tsID;
-
-  const queryTC = TestCase.create(body);
+  req.body.modifiedBy = req.body.creator;
+  const queryTC = TestCase.create(req.body);
   const testCase = await queryTC;
 
+  //setting __v to undefined to hide in from the response. This is not persisted to DB
+  testCase.__v = undefined;
   res.status(201).json({
     status: 'success',
-    data: testCase
+    data: { testCase }
   });
 });
 

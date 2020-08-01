@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const testSuiteSchema = mongoose.Schema(
+const testSuiteSchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -39,12 +39,11 @@ const testSuiteSchema = mongoose.Schema(
     },
     testCases: [{ type: mongoose.Schema.Types.ObjectId, ref: 'BaseTestCase' }],
     scheduledTest: [{ type: mongoose.Schema.Types.ObjectId }],
-    // scheduledTest: [String],
     relatedProblems: [{ type: mongoose.Schema.Types.ObjectId }]
   },
   { timestamps: true }
 );
 
-const TestSuite = mongoose.model('TestSuite', testSuiteSchema);
+const TestSuiteModel = mongoose.model('TestSuite', testSuiteSchema);
 
-module.exports = TestSuite;
+module.exports = TestSuiteModel;

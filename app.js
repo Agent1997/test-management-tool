@@ -6,10 +6,12 @@ const scheduledTestSuitesRouter = require('./routes/scheduledTestSuitesRouter');
 const globalErrorHandler = require('./controllers/errorController');
 
 const AppError = require('./utils/appError');
+const requestBodyFilter = require('./utils/requestBodyFilter');
 
 const app = express();
 
 app.use(express.json());
+app.use(requestBodyFilter);
 
 app.use('/api/v1/test-cases', baseTestCasesRouter);
 app.use('/api/v1/test-suites', testSuitesRouter);
