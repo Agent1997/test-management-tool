@@ -5,6 +5,12 @@ const castErrorHandlerDB = err => {
   return new AppError(message, 400);
 };
 
+const validationErrorHandlerDB = err => {
+  const errors = Object.values(err.errors).map(el => el.properties.message);
+  const message = `Invalid values. ${errors.join(' ')}`;
+  return new AppError(message, 400);
+};
+
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -21,12 +27,20 @@ const sendErrorProd = (err, res) => {
       status: err.status,
       statusCode: err.statusCode,
       message: err.message
+
+      //remove below codes later
+      // stack: err.stack,
+      // error: err
     });
   } else {
     console.error('ERROR ', err);
     res.status(500).json({
       status: 'error',
       message: 'Something went wrong'
+
+      //remove below codes later
+      // stack: err.stack,
+      // error: err
     });
   }
 };
@@ -39,9 +53,12 @@ module.exports = (err, req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === 'production') {
-    let error = null;
+    let error = err;
     if (err.stack.split(':')[0].toLowerCase() === 'casterror') {
       error = castErrorHandlerDB(err);
+    }
+    if (err.stack.split(':')[0].toLowerCase() === 'validationerror') {
+      error = validationErrorHandlerDB(err);
     }
     sendErrorProd(error, res);
   }
