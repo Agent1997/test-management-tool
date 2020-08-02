@@ -23,12 +23,10 @@ module.exports = (req, res, next) => {
       }
       if (req.originalUrl === '/api/v1/scheduled-tests') {
         acceptedParams = [
-          'title',
           'testSuiteID',
           'milestone',
           'type',
           'scheduledBy',
-          'testCases',
           'priority'
         ];
       }
