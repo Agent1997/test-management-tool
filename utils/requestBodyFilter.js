@@ -1,17 +1,7 @@
-const cleanReqBody = (req, acceptedParams) => {
-  if (acceptedParams.length > 0) {
-    const currentReqParams = Object.keys(req.body);
-    currentReqParams.forEach(value => {
-      if (!acceptedParams.includes(value)) {
-        delete req.body[value];
-      }
-    });
-  }
-};
+const cleanObject = require('./cleanObject');
 
 module.exports = (req, res, next) => {
   let acceptedParams = [];
-  //   console.log('before', req.body);
   // eslint-disable-next-line default-case
   switch (req.method) {
     case 'POST': {
@@ -31,11 +21,22 @@ module.exports = (req, res, next) => {
           'priority'
         ];
       }
+      if (req.originalUrl === '/api/v1/scheduled-tests') {
+        acceptedParams = [
+          'title',
+          'testSuiteID',
+          'milestone',
+          'type',
+          'scheduledBy',
+          'testCases',
+          'priority'
+        ];
+      }
       break;
     }
   }
 
-  cleanReqBody(req, acceptedParams);
+  cleanObject(req.body, acceptedParams);
   //   console.log('after', req.body);
   next();
 };

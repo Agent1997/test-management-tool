@@ -2,57 +2,64 @@
 const TestSuiteModel = require('../models/testSuiteModel');
 const BaseTestCaseModel = require('./../models/baseTestCaseModel');
 const ScheduledTestCasesModel = require('./../models/scheduledTestCasesModel');
+const ScheduledTestSuitesModel = require('./../models/scheduledTestSuitesModel');
 const catchAsync = require('./../utils/catchAsync');
+const cleanObject = require('./../utils/cleanObject');
+const acceptedTCParams = [
+  'testData',
+  'postConditions',
+  'expectedResults',
+  'priority',
+  'actualResults',
+  'scheduledTestSuiteID',
+  'testSuiteID',
+  'rootTestCaseID',
+  'preRequisites',
+  'testSteps',
+  'title',
+  'status',
+  'testerName',
+  'scheduledBy',
+  'modifiedBy',
+  'relatedProblems',
+  'attachedFiles',
+  'attachedImages'
+];
 
 exports.scheduleTest = catchAsync(async (req, res, next) => {
-  //1. Get Test suite from DB. Get useful data  from test suite: Test cases, title, prioriy, id
-  const testCasesObj = await TestSuiteModel.findById(req.body.tsID).select(
-    'title priority testCases _id'
-  );
+  //Create Test Suite
+  req.body.modifiedBy = req.body.scheduledBy;
+  req.body.testerName = req.body.scheduledBy;
+  // console.log(acceptedTCParams);
 
-  const { testCases, title, _id, priority } = testCasesObj;
+  const query = ScheduledTestSuitesModel.create(req.body);
+  const scheduledTest = await query;
+  scheduledTest.__v = undefined;
 
-  console.log(priority);
-
-  //2. Make a copy of test cases from base test cases to scheduled test testCases
-  const testCaseArrPromise = testCases.map(tcID =>
-    BaseTestCaseModel.findById(tcID)
-  );
-
-  const testCaseArr = await Promise.all(testCaseArrPromise);
-
-  const completeTestCaseArr = testCaseArr.map(testcase => {
-    testcase.scheduledTestSuiteID = _id;
-    testcase.testerName = req.body.creatorName;
-    console.log(testcase);
-    return testcase;
+  // Create individual test cases
+  const rootTestCases = await BaseTestCaseModel.find({
+    _id: { $in: scheduledTest.testCases }
   });
-  // console.log('completeTestCaseArr', completeTestCaseArr);
-  const copiedTestCasePromise = completeTestCaseArr.map(testCase => {
-    const testcaseObj = testCase;
-    console.log('testcaseOBJ', testcaseObj);
-    return ScheduledTestCasesModel.create(testCase);
+  const body = rootTestCases.map(obj => {
+    const tc = Object.assign({}, obj._doc);
+    tc.testerName = scheduledTest.testerName;
+    tc.scheduledBy = scheduledTest.scheduledBy;
+    tc.modifiedBy = scheduledTest.scheduledBy;
+    tc.scheduledTestSuiteID = scheduledTest._id;
+    tc.rootTestCaseID = tc._id;
+    // console.log('BEFORE', tc);
+    cleanObject(tc, acceptedTCParams);
+    // console.log('AFTER', tc);
+    return ScheduledTestCasesModel.create(tc);
   });
 
-  const copiedTestCases = await Promise.all(copiedTestCasePromise);
-  //3. Create the schedule test suite
-  //4. Return an overview of the created test suite
+  const docs = await Promise.all(body);
+  console.log(docs.length);
 
-  // const testCasesObj = await TestSuiteModel.findById(req.body.tsID).select(
-  //   'testCases title _id'
-  // );
-
-  const { body } = req;
-  body.testCases = testCaseArr;
-  body.title = title;
-  body.testSuiteID = _id;
-  // const query = ScheduledTestSuitesModel.create(body);
-
-  // const scheduledTest = await query;
-
-  res.status(200).json({
+  res.status(201).json({
     status: 'success',
-    // data: scheduledTest
-    data: copiedTestCases
+    statusCode: 201,
+    // data: { scheduledTest }
+    data: { scheduledTest }
   });
 });

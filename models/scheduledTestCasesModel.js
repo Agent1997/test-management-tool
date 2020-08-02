@@ -28,6 +28,20 @@ const scheduledTestCasesSchema = new mongoose.Schema(
       minlength: 5,
       trim: true
     },
+    scheduledBy: {
+      type: String,
+      required: true,
+      maxlength: 100,
+      minlength: 5,
+      trim: true
+    },
+    modifiedBy: {
+      type: String,
+      required: true,
+      maxlength: 100,
+      minlength: 5,
+      trim: true
+    },
     relatedProblems: [{ type: mongoose.Schema.Types.ObjectId }],
     attachedImages: {
       type: [String]
@@ -40,7 +54,15 @@ const scheduledTestCasesSchema = new mongoose.Schema(
       maxlength: 6000,
       default: null
     },
-    schedultedTestSuiteID: {
+    scheduledTestSuiteID: {
+      type: String,
+      required: true
+    },
+    testSuiteID: {
+      type: String,
+      required: true
+    },
+    rootTestCaseID: {
       type: String,
       required: true
     },

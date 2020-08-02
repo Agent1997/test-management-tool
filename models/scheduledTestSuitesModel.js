@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const TestSuite = require('./testSuiteModel');
+const AppError = require('./../utils/appError');
 
 const scheduledTestSchema = mongoose.Schema(
   {
@@ -76,14 +77,30 @@ const scheduledTestSchema = mongoose.Schema(
   }
 );
 
-scheduledTestSchema.post('save', async function() {
+scheduledTestSchema.pre('save', async function(next) {
+  // To check if testSuiteID exist before saving
   const testSuite = await TestSuite.findById(this.testSuiteID);
+  if (!testSuite) {
+    return next(
+      new AppError(`TestSuiteID: ${this.testSuiteID} does not exist`, 404)
+    );
+  }
+});
+
+scheduledTestSchema.post('save', async function(doc, next) {
+  const testSuite = await TestSuite.findById(this.testSuiteID);
+  if (!testSuite) {
+    return next(
+      new AppError(`TestSuiteID: ${this.testSuiteID} does not exist`, 404)
+    );
+  }
+
   testSuite.scheduledTest.push(this._id);
   await TestSuite.findByIdAndUpdate(this.testSuiteID, {
     scheduledTest: testSuite.scheduledTest
   });
 });
 
-const ScheduledTest = mongoose.model('ScheduledTest', scheduledTestSchema);
+const ScheduledTest = mongoose.model('ScheduledTestSuite', scheduledTestSchema);
 
 module.exports = ScheduledTest;
