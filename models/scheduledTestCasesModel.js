@@ -100,10 +100,6 @@ const scheduledTestCasesSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// scheduledTestCasesSchema.pre('save', function() {
-//   throw new Error("Can't save document");
-// });
-
 const ScheduledTestCasesModel = mongoose.model(
   'ScheduledTestCase',
   scheduledTestCasesSchema

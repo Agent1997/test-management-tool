@@ -43,6 +43,7 @@ exports.scheduleTest = catchAsync(async (req, res, next) => {
     _id: { $in: scheduledTest.testCases }
   });
 
+  console.log('TC', scheduledTest.testCases);
   const body = rootTestCases.map(obj => {
     const tc = Object.assign({}, obj._doc);
     tc.testerName = scheduledTest.testerName;
@@ -55,9 +56,12 @@ exports.scheduleTest = catchAsync(async (req, res, next) => {
     // console.log('AFTER', tc);
     return ScheduledTestCasesModel.create(tc);
   });
+  await Promise.all(body);
 
-  const docs = await Promise.all(body);
-
+  /*
+  Work needed. Needed to check and handle 
+  test cases that were not saved successfully
+  */
   res.status(201).json({
     status: 'success',
     statusCode: 201,
