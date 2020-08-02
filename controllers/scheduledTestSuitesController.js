@@ -26,30 +26,16 @@ const acceptedTCParams = [
   'attachedFiles',
   'attachedImages'
 ];
-
-exports.scheduleTest = catchAsync(async (req, res, next) => {
-  //add additional params to the body
-  req.body.modifiedBy = req.body.scheduledBy;
-  req.body.testerName = req.body.scheduledBy;
-  //Query the root test suite being scheduled
-  const rootTestSuite = await TestSuiteModel.findById(req.body.testSuiteID);
-  req.body.title = rootTestSuite.title;
-  req.body.testCases = rootTestSuite.testCases;
-  //Create Scheduled Test Suite
-  const scheduledTest = await ScheduledTestSuitesModel.create(req.body);
-  scheduledTest.__v = undefined;
-  // Create individual test cases
+const createIndTestCase = catchAsync(async testSuiteObj => {
   const rootTestCases = await BaseTestCaseModel.find({
-    _id: { $in: scheduledTest.testCases }
+    _id: { $in: testSuiteObj.testCases }
   });
-
-  console.log('TC', scheduledTest.testCases);
-  const body = rootTestCases.map(obj => {
-    const tc = Object.assign({}, obj._doc);
-    tc.testerName = scheduledTest.testerName;
-    tc.scheduledBy = scheduledTest.scheduledBy;
-    tc.modifiedBy = scheduledTest.scheduledBy;
-    tc.scheduledTestSuiteID = scheduledTest._id;
+  const body = rootTestCases.map(el => {
+    const tc = Object.assign({}, el._doc);
+    tc.testerName = testSuiteObj.testerName;
+    tc.scheduledBy = testSuiteObj.scheduledBy;
+    tc.modifiedBy = testSuiteObj.scheduledBy;
+    tc.scheduledTestSuiteID = testSuiteObj._id;
     tc.rootTestCaseID = tc._id;
     // console.log('BEFORE', tc);
     cleanObject(tc, acceptedTCParams);
@@ -57,6 +43,46 @@ exports.scheduleTest = catchAsync(async (req, res, next) => {
     return ScheduledTestCasesModel.create(tc);
   });
   await Promise.all(body);
+});
+
+const singleTCSchedule = catchAsync(async (req, testSuiteID) => {
+  const rootTestSuite = await TestSuiteModel.findById(testSuiteID);
+  //Create Test suite
+  req.body.modifiedBy = req.body.scheduledBy;
+  req.body.testerName = req.body.scheduledBy;
+  req.body.title = rootTestSuite.title;
+  req.body.testCases = rootTestSuite.testCases;
+  const scheduledTest = await ScheduledTestSuitesModel.create(req.body);
+  scheduledTest.__v = undefined;
+
+  //Create all test cases associated with the scheduled test suite
+  createIndTestCase(scheduledTest);
+  return scheduledTest;
+});
+
+const massSchedule = catchAsync(async (req, testSuiteID) => {
+  const testSuitesPromises = testSuiteID.map(id => {
+    return singleTCSchedule(req, id);
+  });
+  return Promise.all(testSuitesPromises);
+});
+
+exports.scheduleTest = catchAsync(async (req, res, next) => {
+  let scheduledTest;
+  if (req.body.testSuiteID.length === 1) {
+    scheduledTest = await singleTCSchedule(req, req.body.testSuiteID[0]);
+  } else {
+    scheduledTest = await massSchedule(req, req.body.testSuiteID);
+  }
+  //add additional params to the body
+  // req.body.modifiedBy = req.body.scheduledBy;
+  // req.body.testerName = req.body.scheduledBy;
+  //Query the root test suite being scheduled
+
+  // req.body.title = rootTestSuite.title;
+  // req.body.testCases = rootTestSuite.testCases;
+  //Create Scheduled Test Suite
+  // Create individual test cases
 
   /*
   Work needed. Needed to check and handle 

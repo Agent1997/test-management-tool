@@ -11,10 +11,12 @@ const scheduledTestSchema = mongoose.Schema(
       minlength: 5,
       trim: true
     },
-    testSuiteID: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true
-    },
+    testSuiteID: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+      }
+    ],
     milestone: {
       type: String,
       max: 100,

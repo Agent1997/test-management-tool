@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const TestSuite = require('./testSuiteModel');
+const AppError = require('./../utils/appError');
 
 const scheduledTestCasesSchema = new mongoose.Schema(
   {
