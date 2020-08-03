@@ -52,6 +52,7 @@ const singleTCSchedule = catchAsync(async (req, testSuiteID) => {
   req.body.testerName = req.body.scheduledBy;
   req.body.title = rootTestSuite.title;
   req.body.testCases = rootTestSuite.testCases;
+  req.body.testSuiteID = rootTestSuite._id; //added
   const scheduledTest = await ScheduledTestSuitesModel.create(req.body);
   scheduledTest.__v = undefined;
 
