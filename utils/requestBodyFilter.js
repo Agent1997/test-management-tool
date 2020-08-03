@@ -21,7 +21,7 @@ module.exports = (req, res, next) => {
           'priority'
         ];
       }
-      if (req.originalUrl === '/api/v1/scheduled-tests') {
+      if (req.originalUrl === '/api/v1/scheduled-testSuites') {
         acceptedParams = [
           'testSuiteID',
           'milestone',

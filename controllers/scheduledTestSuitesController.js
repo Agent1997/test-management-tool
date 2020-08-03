@@ -37,9 +37,7 @@ const createIndTestCase = catchAsync(async testSuiteObj => {
     tc.modifiedBy = testSuiteObj.scheduledBy;
     tc.scheduledTestSuiteID = testSuiteObj._id;
     tc.rootTestCaseID = tc._id;
-    // console.log('BEFORE', tc);
     cleanObject(tc, acceptedTCParams);
-    // console.log('AFTER', tc);
     return ScheduledTestCasesModel.create(tc);
   });
   await Promise.all(body);
@@ -75,24 +73,10 @@ exports.scheduleTest = catchAsync(async (req, res, next) => {
   } else {
     scheduledTest = await massSchedule(req, req.body.testSuiteID);
   }
-  //add additional params to the body
-  // req.body.modifiedBy = req.body.scheduledBy;
-  // req.body.testerName = req.body.scheduledBy;
-  //Query the root test suite being scheduled
 
-  // req.body.title = rootTestSuite.title;
-  // req.body.testCases = rootTestSuite.testCases;
-  //Create Scheduled Test Suite
-  // Create individual test cases
-
-  /*
-  Work needed. Needed to check and handle 
-  test cases that were not saved successfully
-  */
   res.status(201).json({
     status: 'success',
     statusCode: 201,
-    // data: { scheduledTest }
     data: { scheduledTest }
   });
 });

@@ -2,6 +2,7 @@ const express = require('express');
 
 const baseTestCasesRouter = require('./routes/baseTestCaseRouter');
 const testSuitesRouter = require('./routes/testSuitesRouter');
+const scheduledTestCasesRouter = require('./routes/scheduledTestCaseRouter');
 const scheduledTestSuitesRouter = require('./routes/scheduledTestSuitesRouter');
 const globalErrorHandler = require('./controllers/errorController');
 
@@ -15,7 +16,8 @@ app.use(requestBodyFilter);
 
 app.use('/api/v1/test-cases', baseTestCasesRouter);
 app.use('/api/v1/test-suites', testSuitesRouter);
-app.use('/api/v1/scheduled-tests', scheduledTestSuitesRouter);
+app.use('/api/v1/scheduled-testSuites', scheduledTestSuitesRouter);
+app.use('/api/v1/scheduled-testCases', scheduledTestCasesRouter);
 
 //Handling other routes
 app.all('*', (req, res, next) => {

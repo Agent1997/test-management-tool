@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const TestSuite = require('./testSuiteModel');
-const AppError = require('./../utils/appError');
 
 const scheduledTestCasesSchema = new mongoose.Schema(
   {
@@ -35,7 +33,8 @@ const scheduledTestCasesSchema = new mongoose.Schema(
       required: true,
       maxlength: 100,
       minlength: 5,
-      trim: true
+      trim: true,
+      immutable: true
     },
     modifiedBy: {
       type: String,
@@ -58,15 +57,18 @@ const scheduledTestCasesSchema = new mongoose.Schema(
     },
     scheduledTestSuiteID: {
       type: String,
-      required: true
+      required: true,
+      immutable: true
     },
     testSuiteID: {
       type: String,
-      required: true
+      required: true,
+      immutable: true
     },
     rootTestCaseID: {
       type: String,
-      required: true
+      required: true,
+      immutable: true
     },
     preRequisites: {
       type: String,
