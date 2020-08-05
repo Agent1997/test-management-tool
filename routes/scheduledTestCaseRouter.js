@@ -4,7 +4,10 @@ const scheduledTestCaseController = require('./../controllers/scheduledTestCaseC
 const router = express.Router();
 
 router
-  .route('/:scheduledTCID')
+  .route('/:scheduledTestSuiteID')
   .patch(scheduledTestCaseController.updateScheduledTestCase);
 
+router
+  .route('/:scheduledTestSuiteID/:scheduledTestCaseID')
+  .delete(scheduledTestCaseController.deleteScheduledTestCase);
 module.exports = router;

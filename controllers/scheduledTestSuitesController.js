@@ -66,6 +66,10 @@ const massSchedule = catchAsync(async (req, testSuiteID) => {
   return Promise.all(testSuitesPromises);
 });
 
+/*
+all test cases associated with the test suite will be scheduled, user will 
+have to manually delete unnecessary test cases on the scheduled test suite
+*/
 exports.scheduleTest = catchAsync(async (req, res, next) => {
   let scheduledTest;
   if (req.body.testSuiteID.length === 1) {
