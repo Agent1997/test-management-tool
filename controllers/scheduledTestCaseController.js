@@ -44,20 +44,8 @@ exports.deleteScheduledTestCase = catchAsync(async (req, res, next) => {
   const scheduledTestSuite = await ScheduledTestSuitesModel.findById(
     scheduledTestSuiteID
   );
-
-  console.log(scheduledTestSuite);
-
-  //validation not yet working
   //if test suite does not exists
-  if (scheduledTestSuite) {
-    if (!scheduledTestSuite.testCases.includes(scheduledTestCaseID)) {
-      return next(
-        new AppError(
-          `Scheduled test case ${scheduledTestCaseID} does not exist`,
-          404
-        )
-      );
-    }
+  if (!scheduledTestSuite) {
     return next(
       new AppError(
         `Scheduled test suite ${scheduledTestSuiteID} does not exist`,
@@ -66,8 +54,22 @@ exports.deleteScheduledTestCase = catchAsync(async (req, res, next) => {
     );
   }
 
+  console.log(scheduledTestSuite.testCases);
+  //if test case does not exist
+  if (!scheduledTestSuite.testCases.includes(scheduledTestCaseID)) {
+    return next(
+      new AppError(
+        `Scheduled test case ${scheduledTestCaseID} does not exist`,
+        404
+      )
+    );
+  }
   //delete scheduled test case
-  await ScheduledTestCasesModel.findByIdAndDelete(scheduledTestCaseID);
+  const delTC = await ScheduledTestCasesModel.findByIdAndDelete(
+    scheduledTestCaseID
+  );
+
+  console.log(delTC);
 
   //remove scheduled test case on the scheduled test suites
 
