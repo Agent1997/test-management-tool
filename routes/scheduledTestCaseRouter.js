@@ -4,7 +4,7 @@ const scheduledTestCaseController = require('./../controllers/scheduledTestCaseC
 const router = express.Router();
 
 router
-  .route('/:scheduledTestSuiteID')
+  .route('/:scheduledTestCaseID')
   .patch(scheduledTestCaseController.updateScheduledTestCase);
 
 router

@@ -1,3 +1,4 @@
+const lodash = require('lodash');
 const ScheduledTestCasesModel = require('./../models/scheduledTestCasesModel');
 const ScheduledTestSuitesModel = require('./../models/scheduledTestSuitesModel');
 const catchAsync = require('./../utils/catchAsync');
@@ -21,10 +22,11 @@ exports.updateScheduledTestCase = catchAsync(async (req, res, next) => {
     }
   });
   const query = ScheduledTestCasesModel.findByIdAndUpdate(
-    req.params.scheduledTestSuiteID,
+    req.params.scheduledTestCaseID,
     req.body,
     {
-      new: true
+      new: true,
+      runValidators: true
     }
   );
 
@@ -44,6 +46,8 @@ exports.deleteScheduledTestCase = catchAsync(async (req, res, next) => {
   const scheduledTestSuite = await ScheduledTestSuitesModel.findById(
     scheduledTestSuiteID
   );
+
+  console.log(scheduledTestSuite);
   //if test suite does not exists
   if (!scheduledTestSuite) {
     return next(
@@ -54,7 +58,7 @@ exports.deleteScheduledTestCase = catchAsync(async (req, res, next) => {
     );
   }
 
-  console.log(scheduledTestSuite.testCases);
+  // console.log(scheduledTestSuite.testCases);
   //if test case does not exist
   if (!scheduledTestSuite.testCases.includes(scheduledTestCaseID)) {
     return next(
@@ -69,12 +73,33 @@ exports.deleteScheduledTestCase = catchAsync(async (req, res, next) => {
     scheduledTestCaseID
   );
 
-  console.log(delTC);
+  // console.log(scheduledTestCaseID);
 
   //remove scheduled test case on the scheduled test suites
 
-  // console.log(scheduledTestSuiteID);
+  console.log('scheduledTestCaseID', scheduledTestCaseID);
+  console.log('scheduledTestsuiteID', scheduledTestSuiteID);
 
-  const newTestCases = [...scheduledTestSuite.testCases];
-  // console.log(newTestCases);
+  // const newTestCases = [...scheduledTestSuite.testCases];
+  console.log('before tc', scheduledTestSuite.testCases);
+  const newTestCases = lodash.remove(scheduledTestSuite.testCases, function(
+    id
+  ) {
+    // eslint-disable-next-line eqeqeq
+    if (id == scheduledTestCaseID) return id; // had to use loose equality here to type diff
+  });
+  console.log('newTc', newTestCases);
+  console.log('before tc', scheduledTestSuite.testCases);
+
+  const updatedTestSuite = await ScheduledTestSuitesModel.findByIdAndUpdate(
+    scheduledTestSuiteID,
+    { testCases: scheduledTestSuite.testCases },
+    { new: true, runValidators: true }
+  );
+
+  res.status(200).json({
+    status: 'success',
+    statusCode: 200,
+    data: { updatedTestSuite }
+  });
 });
