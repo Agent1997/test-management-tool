@@ -11,7 +11,6 @@ const immutable = [
   'rootTestCaseID'
 ];
 
-//no validation yet if the resource being updated exists
 exports.updateScheduledTestCase = catchAsync(async (req, res, next) => {
   const params = Object.keys(req.body);
   let message = '';
@@ -31,6 +30,16 @@ exports.updateScheduledTestCase = catchAsync(async (req, res, next) => {
   );
 
   const scheduledTC = await query;
+
+  // If Scheduled test case does not exist
+  if (!scheduledTC) {
+    return next(
+      new AppError(
+        `Scheduled test case ${req.params.scheduledTestCaseID} does not exist.`
+      )
+    );
+  }
+
   res.status(200).json({
     status: 'success',
     statusCode: 200,
@@ -39,16 +48,14 @@ exports.updateScheduledTestCase = catchAsync(async (req, res, next) => {
   });
 });
 
-//no validation yet if the resource being deleted exists
 exports.deleteScheduledTestCase = catchAsync(async (req, res, next) => {
   const { scheduledTestSuiteID, scheduledTestCaseID } = req.params;
-  //Check if the test suite exists
+  //1. Check if the test suite exists
   const scheduledTestSuite = await ScheduledTestSuitesModel.findById(
     scheduledTestSuiteID
   );
 
-  console.log(scheduledTestSuite);
-  //if test suite does not exists
+  //1.a if test suite does not exists
   if (!scheduledTestSuite) {
     return next(
       new AppError(
@@ -58,8 +65,7 @@ exports.deleteScheduledTestCase = catchAsync(async (req, res, next) => {
     );
   }
 
-  // console.log(scheduledTestSuite.testCases);
-  //if test case does not exist
+  //1.b if test case does not exist
   if (!scheduledTestSuite.testCases.includes(scheduledTestCaseID)) {
     return next(
       new AppError(
@@ -68,28 +74,15 @@ exports.deleteScheduledTestCase = catchAsync(async (req, res, next) => {
       )
     );
   }
-  //delete scheduled test case
-  const delTC = await ScheduledTestCasesModel.findByIdAndDelete(
-    scheduledTestCaseID
-  );
 
-  // console.log(scheduledTestCaseID);
+  //2. delete scheduled test case
+  await ScheduledTestCasesModel.findByIdAndDelete(scheduledTestCaseID);
 
-  //remove scheduled test case on the scheduled test suites
-
-  console.log('scheduledTestCaseID', scheduledTestCaseID);
-  console.log('scheduledTestsuiteID', scheduledTestSuiteID);
-
-  // const newTestCases = [...scheduledTestSuite.testCases];
-  console.log('before tc', scheduledTestSuite.testCases);
-  const newTestCases = lodash.remove(scheduledTestSuite.testCases, function(
-    id
-  ) {
+  //3.remove scheduled test case on the scheduled test suites
+  lodash.remove(scheduledTestSuite.testCases, function(id) {
     // eslint-disable-next-line eqeqeq
     if (id == scheduledTestCaseID) return id; // had to use loose equality here to type diff
   });
-  console.log('newTc', newTestCases);
-  console.log('before tc', scheduledTestSuite.testCases);
 
   const updatedTestSuite = await ScheduledTestSuitesModel.findByIdAndUpdate(
     scheduledTestSuiteID,
