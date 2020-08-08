@@ -1,4 +1,4 @@
-// const ScheduledTestSuitesModel = require('../models/scheduledTestSuitesModel');
+const lodash = require('lodash');
 const TestSuiteModel = require('../models/testSuiteModel');
 const BaseTestCaseModel = require('./../models/baseTestCaseModel');
 const ScheduledTestCasesModel = require('./../models/scheduledTestCasesModel');
@@ -26,6 +26,7 @@ const acceptedTCParams = [
   'attachedFiles',
   'attachedImages'
 ];
+const immutableSTSParams = ['testSuiteID', 'scheduledBy'];
 const createIndTestCase = catchAsync(async (testSuiteObj, testCases) => {
   const rootTestCases = await BaseTestCaseModel.find({
     _id: { $in: testCases }
@@ -40,9 +41,7 @@ const createIndTestCase = catchAsync(async (testSuiteObj, testCases) => {
     cleanObject(tc, acceptedTCParams);
     return ScheduledTestCasesModel.create(tc);
   });
-  // console.log('Indvidual TC', await Promise.all(body));
   return await Promise.all(body);
-  // await Promise.all(body);
 });
 
 const singleTestSuiteSched = catchAsync(async (req, testSuiteID) => {
@@ -51,17 +50,9 @@ const singleTestSuiteSched = catchAsync(async (req, testSuiteID) => {
   req.body.modifiedBy = req.body.scheduledBy;
   req.body.testerName = req.body.scheduledBy;
   req.body.title = rootTestSuite.title;
-  // req.body.testCases = rootTestSuite.testCases; //removed this line because the test cases
-  //related to the root test suite is being saved in the scheduled test suite which should not be saved
-  //it should contain the id of the created schedule test cases
   req.body.testSuiteID = rootTestSuite._id; //added
   const scheduledTest = await ScheduledTestSuitesModel.create(req.body);
-
-  console.log('scheduled test', scheduledTest);
   scheduledTest.__v = undefined;
-
-  //Create all test cases associated with the scheduled test suite
-  // createIndTestCase(scheduledTest, rootTestSuite.testCases);
 
   const scheduledTestCases = await createIndTestCase(
     scheduledTest,
@@ -72,19 +63,12 @@ const singleTestSuiteSched = catchAsync(async (req, testSuiteID) => {
     testCaseObj => testCaseObj._id
   );
 
-  console.log('scheduledTest._id', scheduledTest._id);
-  // console.log('sched test from single tc', scheduledTestCases);
-  console.log('sched test from single tc IDs', scheduledTestCasesIDs);
-
   const scheduledTestUpdated = await ScheduledTestSuitesModel.findByIdAndUpdate(
     scheduledTest._id,
     { testCases: scheduledTestCasesIDs },
     { new: true }
   );
 
-  //TODO: create test suites. then create individual test cases. wait to finish. then gather ID's, then update scheduled test suite
-
-  console.log('updated testsuite', scheduledTestUpdated);
   return scheduledTestUpdated; //returns a promise
 });
 
@@ -92,22 +76,16 @@ const massSchedule = catchAsync(async (req, testSuiteID) => {
   const testSuitesPromises = testSuiteID.map(id => {
     return singleTestSuiteSched(req, id);
   });
-  // console.log('Test suite promises', testSuitesPromises);
   return Promise.all(testSuitesPromises);
 });
 
-/*
-all test cases associated with the test suite will be scheduled, user will 
-have to manually delete unnecessary test cases on the scheduled test suite
-*/
+// GOOD
 exports.scheduleTest = catchAsync(async (req, res, next) => {
   let scheduledTest;
   if (req.body.testSuiteID.length === 1) {
     scheduledTest = await singleTestSuiteSched(req, req.body.testSuiteID[0]);
-    // console.log('single sched', scheduledTest);
   } else {
     scheduledTest = await massSchedule(req, req.body.testSuiteID);
-    // console.log('mass sched', scheduledTest);
   }
 
   res.status(201).json({
@@ -115,4 +93,60 @@ exports.scheduleTest = catchAsync(async (req, res, next) => {
     statusCode: 201,
     data: { scheduledTest }
   });
+});
+
+// GOOD
+exports.updateScheduledTestSuite = catchAsync(async (req, res, next) => {
+  const params = Object.keys(req.body);
+  let message = '';
+  params.forEach(key => {
+    if (immutableSTSParams.includes(key)) {
+      message += ` ${key} is not modifiable.`;
+      delete req.body[key];
+    }
+  });
+  const { scheduleTestSuiteID } = req.body;
+  delete req.body.scheduleTestSuiteID;
+  const updatedTestSuite = await ScheduledTestSuitesModel.findByIdAndUpdate(
+    scheduleTestSuiteID,
+    req.body,
+    { new: true, runValidators: true }
+  );
+
+  res.status(200).json({
+    status: 'success',
+    statusCode: 200,
+    message,
+    data: { updatedTestSuite }
+  });
+});
+
+const singleDelete = catchAsync(async (id, req, next) => {
+  const deletedScheduledTestSuite = await ScheduledTestSuitesModel.findByIdAndDelete(
+    id
+  );
+  console.log(deletedScheduledTestSuite);
+
+  const baseTestSuite = await TestSuiteModel.findById(
+    deletedScheduledTestSuite.testSuiteID
+  );
+
+  lodash.remove(baseTestSuite.scheduledTest, function(baseID) {
+    // eslint-disable-next-line eqeqeq
+    if (baseID == id) return baseID;
+  });
+
+  const updatedTestSuite = await TestSuiteModel.findByIdAndUpdate(
+    deletedScheduledTestSuite.testSuiteID,
+    { scheduledTest: baseTestSuite.scheduledTest },
+    { new: true, runValidators: true }
+  );
+
+  console.log(updatedTestSuite);
+});
+
+exports.deleteScheduledTestSuite = catchAsync(async (req, res, next) => {
+  if (req.body.scheduledTestSuitedID.length === 1) {
+    await singleDelete(req.body.scheduledTestSuitedID[0], req, next);
+  }
 });

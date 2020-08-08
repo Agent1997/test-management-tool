@@ -13,7 +13,8 @@ const scheduledTestSchema = mongoose.Schema(
     },
     testSuiteID: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true
+      required: true,
+      immutable: true
     },
     milestone: {
       type: String,
@@ -49,7 +50,8 @@ const scheduledTestSchema = mongoose.Schema(
       required: true,
       maxlength: 100,
       minlength: 5,
-      trim: true
+      trim: true,
+      immutable: true
     },
     modifiedBy: {
       type: String,

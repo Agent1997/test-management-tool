@@ -3,6 +3,12 @@ const scheduledTestSuitesController = require('../controllers/scheduledTestSuite
 
 const router = express.Router();
 
-router.route('/').post(scheduledTestSuitesController.scheduleTest);
+router
+  .route('/')
+  .post(scheduledTestSuitesController.scheduleTest)
+  .patch(scheduledTestSuitesController.updateScheduledTestSuite)
+  .delete(scheduledTestSuitesController.deleteScheduledTestSuite);
+
+router.route('/:scheduledTestSuiteID');
 
 module.exports = router;
