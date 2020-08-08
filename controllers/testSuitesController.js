@@ -3,6 +3,8 @@ const TestSuiteModel = require('./../models/testSuiteModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 
+const immutable = ['version', 'creator'];
+
 //GOOD
 exports.createTestSuite = catchAsync(async (req, res, next) => {
   req.body.modifiedBy = req.body.creator;
@@ -20,6 +22,15 @@ exports.createTestSuite = catchAsync(async (req, res, next) => {
 
 // GOOD
 exports.updateTestSuite = catchAsync(async (req, res, next) => {
+  const params = Object.keys(req.body);
+  let message = '';
+  params.forEach(key => {
+    if (immutable.includes(key)) {
+      message += ` ${key} is not modifiable.`;
+      delete req.body[key];
+    }
+  });
+
   const query = TestSuiteModel.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true
@@ -37,6 +48,7 @@ exports.updateTestSuite = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     statusCode: 200,
+    message,
     data: suite
   });
 });

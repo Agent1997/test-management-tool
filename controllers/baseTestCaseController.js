@@ -1,8 +1,10 @@
+const lodash = require('lodash');
 const TestCase = require('../models/baseTestCaseModel');
 const TestSuite = require('../models/testSuiteModel');
 const catchAsync = require('./../utils/catchAsync.js');
 const AppError = require('./../utils/appError');
 
+// GOOD
 exports.createTestCases = catchAsync(async (req, res, next) => {
   req.body.modifiedBy = req.body.creator;
   const queryTC = TestCase.create(req.body);
@@ -12,22 +14,33 @@ exports.createTestCases = catchAsync(async (req, res, next) => {
   testCase.__v = undefined;
   res.status(201).json({
     status: 'success',
+    statusCode: 201,
     data: { testCase }
   });
 });
 
-// this method can be removed
+// GOOD
 exports.getAllTestCase = catchAsync(async (req, res, next) => {
   const query = TestCase.find({ testSuiteID: req.params.tsID });
-
   const testCases = await query;
+
+  if (testCases.length === 0) {
+    return next(
+      new AppError(`This test suite ${req.params.tsID} does not exist.`, 404)
+    );
+  }
+
   res.status(200).json({
     status: 'success',
+    statusCode: 200,
     count: testCases.length,
-    data: testCases
+    data: { testCases }
   });
 });
 
+// GOOD
+//review query, maybe findById will work
+//review router as well
 exports.getTestCase = catchAsync(async (req, res, next) => {
   const query = TestCase.find({
     testSuiteID: req.params.tsID,
@@ -38,78 +51,87 @@ exports.getTestCase = catchAsync(async (req, res, next) => {
 
   if (!testCase[0]) {
     return next(
-      new AppError(`Test case with ID ${req.params.id} does not exists`, 404)
+      new AppError(
+        `Test case with ID ${req.params.id} or Test Suite with ID ${req.params.tsID} does not exists`,
+        404
+      )
     );
   }
-  // console.log(req.params);
+
   res.status(200).json({
     status: 'success',
     data: testCase
   });
 });
 
-exports.updateTestCase = async (req, res, next) => {
-  try {
-    const query = TestCase.findOneAndUpdate(
-      {
-        testSuiteID: req.params.tsID,
-        _id: req.params.id
-      },
-      req.body,
-      {
-        new: true,
-        runValidators: true
-      }
-    );
-
-    const testCase = await query;
-
-    if (!testCase) {
-      return next(
-        new AppError(`Test case with ID ${req.params.id} does not exists`, 404)
-      );
-    }
-
-    res.status(200).json({
-      status: 'success',
-      data: testCase
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: 'failed',
-      data: err
-    });
-  }
-};
-
-exports.deleteTestCase = async (req, res, next) => {
-  try {
-    const query = TestCase.findOneAndDelete({
+// GOOD
+//Review query, maybe findByIdAndUpdate will work
+//review router as well
+exports.updateTestCase = catchAsync(async (req, res, next) => {
+  const query = TestCase.findOneAndUpdate(
+    {
       testSuiteID: req.params.tsID,
       _id: req.params.id
-    });
-
-    const testCase = await query;
-    if (!testCase) {
-      return next(
-        new AppError(`Test case with ID ${req.params.id} does not exists`, 404)
-      );
+    },
+    req.body,
+    {
+      new: true,
+      runValidators: true
     }
+  );
 
-    //for adding a test case reference to test suite
-    const testSuite = await TestSuite.findById(req.params.tsID);
-    testSuite.testCases.splice(testSuite.testCases.indexOf(req.params.id), 1);
-    await TestSuite.findByIdAndUpdate(req.params.tsID, {
-      testCases: testSuite.testCases
-    });
+  const testCase = await query;
 
-    res.status(200).json({
-      status: 'success'
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: 'failed',
-      data: err
-    });
+  if (!testCase) {
+    return next(
+      new AppError(
+        `Test case with ID ${req.params.id} or Test Suite with ID ${req.params.tsID} does not exists`,
+        404
+      )
+    );
   }
-};
+
+  res.status(200).json({
+    status: 'success',
+    data: testCase
+  });
+});
+
+// GOOD
+exports.deleteTestCase = catchAsync(async (req, res, next) => {
+  const query = TestCase.findOneAndDelete({
+    testSuiteID: req.params.tsID,
+    _id: req.params.id
+  });
+
+  const testCase = await query;
+  if (!testCase) {
+    return next(
+      new AppError(
+        `Test case with ID ${req.params.id} or Test Suite with ID ${req.params.tsID} does not exists`,
+        404
+      )
+    );
+  }
+
+  //for removing deleted test case id on test suite
+  const testSuite = await TestSuite.findById(req.params.tsID);
+  lodash.remove(testSuite.testCases, function(id) {
+    // eslint-disable-next-line eqeqeq
+    if (id == req.params.id) {
+      return id;
+    }
+  });
+  // testSuite.testCases.splice(testSuite.testCases.indexOf(req.params.id), 1);
+  await TestSuite.findByIdAndUpdate(
+    req.params.tsID,
+    {
+      testCases: testSuite.testCases
+    },
+    { runValidators: true }
+  );
+
+  res.status(200).json({
+    status: 'success'
+  });
+});

@@ -6,7 +6,7 @@ module.exports = (req, res, next) => {
   switch (req.method) {
     case 'POST': {
       if (req.originalUrl === '/api/v1/test-suites') {
-        acceptedParams = ['title', 'creator'];
+        acceptedParams = ['title', 'creator', 'version', 'priority'];
       }
       if (req.originalUrl === '/api/v1/test-cases') {
         acceptedParams = [

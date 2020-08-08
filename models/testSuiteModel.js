@@ -22,14 +22,17 @@ const testSuiteSchema = new mongoose.Schema(
     version: {
       type: Number,
       max: 100,
-      default: 0
+      required: true,
+      unique: true,
+      immutable: true
     },
     creator: {
       type: String,
       required: true,
       maxlength: 100,
       minlength: 5,
-      trim: true
+      trim: true,
+      immutable: true
     },
     modifiedBy: {
       type: String,

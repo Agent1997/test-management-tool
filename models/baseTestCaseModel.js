@@ -13,7 +13,8 @@ const baseTestCaseSchema = mongoose.Schema(
     },
     testSuiteID: {
       type: String,
-      required: true
+      required: true,
+      immutable: true
     },
     preRequisites: {
       type: String,
@@ -50,7 +51,8 @@ const baseTestCaseSchema = mongoose.Schema(
       required: true,
       maxlength: 100,
       minlength: 5,
-      trim: true
+      trim: true,
+      immutable: true
     },
     modifiedBy: {
       type: String,
