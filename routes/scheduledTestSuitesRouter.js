@@ -7,8 +7,7 @@ router
   .route('/')
   .post(scheduledTestSuitesController.scheduleTest)
   .patch(scheduledTestSuitesController.updateScheduledTestSuite)
-  .delete(scheduledTestSuitesController.deleteScheduledTestSuite);
-
-router.route('/:scheduledTestSuiteID');
+  .delete(scheduledTestSuitesController.deleteScheduledTestSuite)
+  .get(scheduledTestSuitesController.getScheduledTestSuite);
 
 module.exports = router;

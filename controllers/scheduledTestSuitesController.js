@@ -1,10 +1,12 @@
 const lodash = require('lodash');
+const mongoose = require('mongoose');
 const TestSuiteModel = require('../models/testSuiteModel');
 const BaseTestCaseModel = require('./../models/baseTestCaseModel');
 const ScheduledTestCasesModel = require('./../models/scheduledTestCasesModel');
 const ScheduledTestSuitesModel = require('./../models/scheduledTestSuitesModel');
 const catchAsync = require('./../utils/catchAsync');
 const cleanObject = require('./../utils/cleanObject');
+const AppError = require('./../utils/appError');
 
 const acceptedTCParams = [
   'testData',
@@ -27,6 +29,17 @@ const acceptedTCParams = [
   'attachedImages'
 ];
 const immutableSTSParams = ['testSuiteID', 'scheduledBy'];
+const acceptedGetParams = [
+  'testSuiteID',
+  'milestone',
+  'type',
+  'status',
+  'testerName',
+  'scheduledBy',
+  'modifiedBy',
+  'priority',
+  '_id'
+];
 const createIndTestCase = catchAsync(async (testSuiteObj, testCases) => {
   const rootTestCases = await BaseTestCaseModel.find({
     _id: { $in: testCases }
@@ -121,32 +134,79 @@ exports.updateScheduledTestSuite = catchAsync(async (req, res, next) => {
   });
 });
 
-const singleDelete = catchAsync(async (id, req, next) => {
+const singleDelete = async (id, req, next) => {
   const deletedScheduledTestSuite = await ScheduledTestSuitesModel.findByIdAndDelete(
     id
   );
-  console.log(deletedScheduledTestSuite);
+
+  if (!deletedScheduledTestSuite) {
+    throw new AppError(
+      `Scheduled Test Suite with ID ${id} does not exist`,
+      404
+    );
+  }
 
   const baseTestSuite = await TestSuiteModel.findById(
     deletedScheduledTestSuite.testSuiteID
   );
+
+  if (!baseTestSuite) {
+    throw new AppError(
+      `Test Suite with ID ${deletedScheduledTestSuite.testSuiteID} associated with Scheduled Test Suite with ID ${id} does not exist`,
+      404
+    );
+  }
 
   lodash.remove(baseTestSuite.scheduledTest, function(baseID) {
     // eslint-disable-next-line eqeqeq
     if (baseID == id) return baseID;
   });
 
-  const updatedTestSuite = await TestSuiteModel.findByIdAndUpdate(
+  await TestSuiteModel.findByIdAndUpdate(
     deletedScheduledTestSuite.testSuiteID,
     { scheduledTest: baseTestSuite.scheduledTest },
     { new: true, runValidators: true }
   );
-
-  console.log(updatedTestSuite);
-});
+};
 
 exports.deleteScheduledTestSuite = catchAsync(async (req, res, next) => {
-  if (req.body.scheduledTestSuitedID.length === 1) {
-    await singleDelete(req.body.scheduledTestSuitedID[0], req, next);
+  const { scheduledTestSuiteID } = req.body;
+  if (!scheduledTestSuiteID) {
+    return next(
+      new AppError(
+        `ID of scheduled test suite is missing in the request body`,
+        400
+      )
+    );
   }
+  if (scheduledTestSuiteID.length === 1) {
+    await singleDelete(scheduledTestSuiteID[0], req, next);
+  }
+
+  // TODO: mass deleted
+  res.status(200).json({ status: 'success', statusCode: 200 });
+});
+
+exports.getScheduledTestSuite = catchAsync(async (req, res, next) => {
+  const queryParams = { ...req.query };
+
+  //remove unwanted query params
+  Object.keys(queryParams).forEach(key => {
+    if (!acceptedGetParams.includes(key)) delete queryParams[key];
+  });
+
+  if (Object.keys(queryParams).length === 0) {
+    return next(new AppError(`Specify a correct query parameter`, 400));
+  }
+  const scheduledTestSuites = await ScheduledTestSuitesModel.find(queryParams);
+  scheduledTestSuites.forEach(suite => {
+    suite.__v = undefined;
+  });
+  res.status(200).json({
+    status: 'success',
+    statusCode: 200,
+    count: scheduledTestSuites.length,
+    queryParams,
+    data: { scheduledTestSuites }
+  });
 });
