@@ -31,7 +31,13 @@ const dbConnect = async () => {
 
 dbConnect();
 
-const server = app.listen(process.env.PORT, '127.0.0.1', () => {
+// for dev
+// const server = app.listen(process.env.PORT, '127.0.0.1', () => {
+//   console.log('Server Listening');
+// });
+
+// for heroku deployment
+const server = app.listen(process.env.PORT, () => {
   console.log('Server Listening');
 });
 
