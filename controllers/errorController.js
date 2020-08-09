@@ -27,21 +27,21 @@ const sendErrorProd = (err, res) => {
     res.status(err.statusCode).json({
       status: err.status,
       statusCode: err.statusCode,
-      message: err.message,
+      message: err.message
 
       //remove below codes later
-      stack: err.stack,
-      error: err
+      // stack: err.stack,
+      // error: err
     });
   } else {
     // console.error('ERROR ', err);
     res.status(500).json({
       status: 'error',
-      message: 'Something went wrong',
+      message: 'Something went wrong'
 
       //remove below codes later
-      stack: err.stack,
-      error: err
+      // stack: err.stack,
+      // error: err
     });
   }
 };
