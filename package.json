@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "node server.js",
+    "deploy": "git push heroku master",
     "dev": "nodemon server.js",
     "debug": "ndb server.js"
   },

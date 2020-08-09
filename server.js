@@ -31,15 +31,18 @@ const dbConnect = async () => {
 
 dbConnect();
 
-// for dev
-// const server = app.listen(process.env.PORT, '127.0.0.1', () => {
-//   console.log('Server Listening');
-// });
+let server;
 
-// for heroku deployment
-const server = app.listen(process.env.PORT, () => {
-  console.log('Server Listening');
-});
+if (process.env.NODE_ENV === 'production') {
+  server = app.listen(process.env.PORT, () => {
+    console.log('Server Listening');
+    console.log('prod');
+  });
+} else if (process.env.NODE_ENV === 'development') {
+  server = app.listen(process.env.PORT_DEV, '127.0.0.1', () => {
+    console.log('Server Listening');
+  });
+}
 
 process.on('unhandledRejection', err => {
   console.log('Name: ', err.name);
