@@ -3,6 +3,8 @@ const scheduledTestCaseController = require('./../controllers/scheduledTestCaseC
 
 const router = express.Router();
 
+router.route('/').get(scheduledTestCaseController.getScheduledTestCases);
+
 router
   .route('/:scheduledTestCaseID')
   .patch(scheduledTestCaseController.updateScheduledTestCase);

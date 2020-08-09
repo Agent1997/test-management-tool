@@ -11,6 +11,8 @@ const immutable = [
   'rootTestCaseID'
 ];
 
+const acceptedGetParams = ['scheduledTestSuiteID'];
+// GOOD
 exports.updateScheduledTestCase = catchAsync(async (req, res, next) => {
   const params = Object.keys(req.body);
   let message = '';
@@ -48,6 +50,7 @@ exports.updateScheduledTestCase = catchAsync(async (req, res, next) => {
   });
 });
 
+// GOOD
 exports.deleteScheduledTestCase = catchAsync(async (req, res, next) => {
   const { scheduledTestSuiteID, scheduledTestCaseID } = req.params;
   //1. Check if the test suite exists
@@ -94,5 +97,26 @@ exports.deleteScheduledTestCase = catchAsync(async (req, res, next) => {
     status: 'success',
     statusCode: 200,
     data: { updatedTestSuite }
+  });
+});
+
+exports.getScheduledTestCases = catchAsync(async (req, res, next) => {
+  const queryParams = { ...req.query };
+  Object.keys(queryParams).forEach(param => {
+    if (!acceptedGetParams.includes(param)) {
+      delete queryParams[param];
+    }
+  });
+
+  if (Object.keys(queryParams).length === 0) {
+    return next(new AppError(`Specify a correct query parameter`, 400));
+  }
+
+  const testCases = await ScheduledTestCasesModel.find(queryParams);
+  res.status(200).json({
+    status: 'success',
+    statusCode: 200,
+    count: testCases.length,
+    data: { testCases }
   });
 });

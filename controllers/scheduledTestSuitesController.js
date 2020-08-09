@@ -1,5 +1,4 @@
 const lodash = require('lodash');
-const mongoose = require('mongoose');
 const TestSuiteModel = require('../models/testSuiteModel');
 const BaseTestCaseModel = require('./../models/baseTestCaseModel');
 const ScheduledTestCasesModel = require('./../models/scheduledTestCasesModel');
@@ -169,6 +168,7 @@ const singleDelete = async (id, req, next) => {
   );
 };
 
+// GODD
 exports.deleteScheduledTestSuite = catchAsync(async (req, res, next) => {
   const { scheduledTestSuiteID } = req.body;
   if (!scheduledTestSuiteID) {
@@ -187,6 +187,7 @@ exports.deleteScheduledTestSuite = catchAsync(async (req, res, next) => {
   res.status(200).json({ status: 'success', statusCode: 200 });
 });
 
+// GOOD
 exports.getScheduledTestSuite = catchAsync(async (req, res, next) => {
   const queryParams = { ...req.query };
 
