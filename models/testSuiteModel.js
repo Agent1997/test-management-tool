@@ -23,8 +23,7 @@ const testSuiteSchema = new mongoose.Schema(
       type: Number,
       max: 100,
       required: true,
-      immutable: true,
-      unique: true
+      immutable: true
     },
     creator: {
       type: String,
