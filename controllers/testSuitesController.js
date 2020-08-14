@@ -16,14 +16,18 @@ exports.createTestSuite = catchAsync(async (req, res, next) => {
   res.status(201).json({
     status: 'success',
     statusCode: 201,
-    data: { suite }
+    message: `Test Suite with id ${suite._id} has been successfully created`
   });
 });
 
 // GOOD
 exports.updateTestSuite = catchAsync(async (req, res, next) => {
   const params = Object.keys(req.body);
-  let message = '';
+
+  if (params.length === 0) {
+    return next(new AppError('Payload is empty', 400));
+  }
+  let message;
   params.forEach(key => {
     if (immutable.includes(key)) {
       message += ` ${key} is not modifiable.`;
@@ -31,25 +35,29 @@ exports.updateTestSuite = catchAsync(async (req, res, next) => {
     }
   });
 
+  const existenceCheck = await TestSuiteModel.findById(req.params.id);
+  if (!existenceCheck) {
+    return next(
+      new AppError(`Test Suite with ID ${req.params.id} does not exists`, 404)
+    );
+  }
+
   const query = TestSuiteModel.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true
   });
 
   const suite = await query;
+
   //setting __v to undefined to hide in from the response. This is not persisted to DB
   suite.__v = undefined;
-  if (!suite) {
-    return next(
-      new AppError(`Test Suite with ID ${req.params.id} does not exists`, 404)
-    );
-  }
+
+  message = `Test Suite with id ${req.params.id} has been successfully updated`;
 
   res.status(200).json({
     status: 'success',
     statusCode: 200,
-    message,
-    data: suite
+    message
   });
 });
 
@@ -76,6 +84,13 @@ exports.getAllTestSuites = catchAsync(async (req, res, next) => {
 
 //GOOD
 exports.getTestSuite = catchAsync(async (req, res, next) => {
+  const suite = await TestSuiteModel.findById(req.params.id);
+  if (!suite) {
+    return next(
+      new AppError(`Test Suite with ID ${req.params.id} does not exists`, 404)
+    );
+  }
+
   const query = TestSuiteModel.findById(req.params.id).populate([
     {
       path: 'testCases',
@@ -90,12 +105,6 @@ exports.getTestSuite = catchAsync(async (req, res, next) => {
   const testSuite = await query;
   //setting __v to undefined to hide in from the response. This is not persisted to DB
   testSuite.__v = undefined;
-
-  if (!testSuite) {
-    return next(
-      new AppError(`Test Suite with ID ${req.params.id} does not exists`, 404)
-    );
-  }
 
   res.status(200).json({
     status: 'success',
@@ -118,6 +127,7 @@ exports.deleteTestSuite = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    statusCode: 200
+    statusCode: 200,
+    message: `Test suite with ID ${req.params.id} has been successfully deleted`
   });
 });
