@@ -5,7 +5,7 @@ const catchAsync = require('./../utils/catchAsync.js');
 const AppError = require('./../utils/appError');
 // eslint-disable-next-line camelcase
 const remove__v = require('./../utils/remove__v');
-const isValidObjectId = require('../utils/validateObjectId');
+const validateObjectId = require('../utils/validateObjectId');
 
 // GOOD
 exports.createTestCases = catchAsync(async (req, res, next) => {
@@ -24,6 +24,7 @@ exports.createTestCases = catchAsync(async (req, res, next) => {
 
 // GOOD
 exports.getAllTestCase = catchAsync(async (req, res, next) => {
+  validateObjectId(req.params.tsID);
   const query = TestCase.find({ testSuiteID: req.params.tsID });
   const testCases = await query;
 
@@ -47,6 +48,8 @@ exports.getAllTestCase = catchAsync(async (req, res, next) => {
 //review query, maybe findById will work
 //review router as well
 exports.getTestCase = catchAsync(async (req, res, next) => {
+  validateObjectId(req.params.tsID);
+  validateObjectId(req.params.id);
   const query = TestCase.find({
     testSuiteID: req.params.tsID,
     _id: req.params.id
@@ -75,7 +78,8 @@ exports.getTestCase = catchAsync(async (req, res, next) => {
 //Review query, maybe findByIdAndUpdate will work
 //review router as well
 exports.updateTestCase = catchAsync(async (req, res, next) => {
-  isValidObjectId(req.params.tsID, next);
+  validateObjectId(req.params.tsID);
+  validateObjectId(req.params.id);
   const query = TestCase.findOneAndUpdate(
     {
       testSuiteID: req.params.tsID,
@@ -101,12 +105,15 @@ exports.updateTestCase = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    data: testCase
+    statusCode: 200,
+    message: `Test case with ID ${req.params.id} has been successfully updated.`
   });
 });
 
 // GOOD
 exports.deleteTestCase = catchAsync(async (req, res, next) => {
+  validateObjectId(req.params.tsID);
+  validateObjectId(req.params.id);
   const query = TestCase.findOneAndDelete({
     testSuiteID: req.params.tsID,
     _id: req.params.id
@@ -140,6 +147,8 @@ exports.deleteTestCase = catchAsync(async (req, res, next) => {
   );
 
   res.status(200).json({
-    status: 'success'
+    status: 'success',
+    statusCode: 200,
+    message: `Test case with ID ${req.params.id} has been successfully deleted.`
   });
 });

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const AppError = require('./appError');
 
-module.exports = (obj, next) => {
+module.exports = obj => {
   let testID;
   try {
     testID = new mongoose.Types.ObjectId(obj);

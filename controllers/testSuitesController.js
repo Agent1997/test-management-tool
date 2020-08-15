@@ -4,6 +4,7 @@ const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 // eslint-disable-next-line camelcase
 const remove__v = require('./../utils/remove__v');
+const validateObjectId = require('../utils/validateObjectId');
 
 const immutable = ['version', 'creator'];
 
@@ -24,6 +25,7 @@ exports.createTestSuite = catchAsync(async (req, res, next) => {
 
 // GOOD
 exports.updateTestSuite = catchAsync(async (req, res, next) => {
+  validateObjectId(req.params.id);
   const params = Object.keys(req.body);
 
   if (params.length === 0) {
@@ -84,6 +86,7 @@ exports.getAllTestSuites = catchAsync(async (req, res, next) => {
 
 //GOOD
 exports.getTestSuite = catchAsync(async (req, res, next) => {
+  validateObjectId(req.params.id);
   const suite = await TestSuiteModel.findById(req.params.id);
   if (!suite) {
     return next(
@@ -115,6 +118,7 @@ exports.getTestSuite = catchAsync(async (req, res, next) => {
 
 //GOOD
 exports.deleteTestSuite = catchAsync(async (req, res, next) => {
+  validateObjectId(req.params.id);
   const query = TestSuiteModel.findByIdAndDelete(req.params.id);
 
   const suite = await query;
