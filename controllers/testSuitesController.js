@@ -2,6 +2,8 @@ const TestSuiteModel = require('./../models/testSuiteModel');
 
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+// eslint-disable-next-line camelcase
+const remove__v = require('./../utils/remove__v');
 
 const immutable = ['version', 'creator'];
 
@@ -12,11 +14,11 @@ exports.createTestSuite = catchAsync(async (req, res, next) => {
   const suite = await query;
 
   //setting __v to undefined to hide in from the response. This is not persisted to DB
-  suite.__v = undefined;
+  remove__v(suite);
   res.status(201).json({
     status: 'success',
     statusCode: 201,
-    message: `Test Suite with id ${suite._id} has been successfully created`
+    message: `Test Suite with id <${suite._id}> has been successfully created`
   });
 });
 
@@ -50,7 +52,7 @@ exports.updateTestSuite = catchAsync(async (req, res, next) => {
   const suite = await query;
 
   //setting __v to undefined to hide in from the response. This is not persisted to DB
-  suite.__v = undefined;
+  remove__v(suite);
 
   message = `Test Suite with id ${req.params.id} has been successfully updated`;
 
@@ -70,9 +72,7 @@ exports.getAllTestSuites = catchAsync(async (req, res, next) => {
   testSuites.__v = undefined;
 
   // TO hide __v in the response
-  testSuites.forEach(suite => {
-    suite.__v = undefined;
-  });
+  remove__v(testSuites);
 
   res.status(200).json({
     status: 'success',
@@ -104,7 +104,7 @@ exports.getTestSuite = catchAsync(async (req, res, next) => {
 
   const testSuite = await query;
   //setting __v to undefined to hide in from the response. This is not persisted to DB
-  testSuite.__v = undefined;
+  remove__v(testSuite);
 
   res.status(200).json({
     status: 'success',

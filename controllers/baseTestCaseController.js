@@ -3,6 +3,9 @@ const TestCase = require('../models/baseTestCaseModel');
 const TestSuite = require('../models/testSuiteModel');
 const catchAsync = require('./../utils/catchAsync.js');
 const AppError = require('./../utils/appError');
+// eslint-disable-next-line camelcase
+const remove__v = require('./../utils/remove__v');
+const isValidObjectId = require('../utils/validateObjectId');
 
 // GOOD
 exports.createTestCases = catchAsync(async (req, res, next) => {
@@ -11,11 +14,11 @@ exports.createTestCases = catchAsync(async (req, res, next) => {
   const testCase = await queryTC;
 
   //setting __v to undefined to hide in from the response. This is not persisted to DB
-  testCase.__v = undefined;
+  remove__v(testCase);
   res.status(201).json({
     status: 'success',
     statusCode: 201,
-    data: { testCase }
+    message: `Test case with ID <${testCase._id}> has been successfully created`
   });
 });
 
@@ -29,6 +32,8 @@ exports.getAllTestCase = catchAsync(async (req, res, next) => {
       new AppError(`This test suite ${req.params.tsID} does not exist.`, 404)
     );
   }
+
+  remove__v(testCases);
 
   res.status(200).json({
     status: 'success',
@@ -49,6 +54,8 @@ exports.getTestCase = catchAsync(async (req, res, next) => {
 
   const testCase = await query;
 
+  remove__v(testCase);
+
   if (!testCase[0]) {
     return next(
       new AppError(
@@ -68,6 +75,7 @@ exports.getTestCase = catchAsync(async (req, res, next) => {
 //Review query, maybe findByIdAndUpdate will work
 //review router as well
 exports.updateTestCase = catchAsync(async (req, res, next) => {
+  isValidObjectId(req.params.tsID, next);
   const query = TestCase.findOneAndUpdate(
     {
       testSuiteID: req.params.tsID,
