@@ -6,6 +6,10 @@ const ScheduledTestSuitesModel = require('./../models/scheduledTestSuitesModel')
 const catchAsync = require('./../utils/catchAsync');
 const cleanObject = require('./../utils/cleanObject');
 const AppError = require('./../utils/appError');
+const compareArrays = require('./../utils/compareArrays');
+const validateObjectId = require('../utils/validateObjectId');
+// eslint-disable-next-line camelcase
+const remove__v = require('./../utils/remove__v');
 
 const acceptedTCParams = [
   'testData',
@@ -58,6 +62,10 @@ const createIndTestCase = catchAsync(async (testSuiteObj, testCases) => {
 
 const singleTestSuiteSched = catchAsync(async (req, testSuiteID) => {
   const rootTestSuite = await TestSuiteModel.findById(testSuiteID);
+  if (!rootTestSuite) {
+    throw new AppError(`Test Suite with ID <${testSuiteID}> does not`, 404);
+  }
+  // console.log('TEST');
   //Create Test suite
   req.body.modifiedBy = req.body.scheduledBy;
   req.body.testerName = req.body.scheduledBy;
@@ -93,33 +101,50 @@ const massSchedule = catchAsync(async (req, testSuiteID) => {
 
 // GOOD
 exports.scheduleTest = catchAsync(async (req, res, next) => {
+  const testSuiteIDs = req.body.testSuiteID;
   let scheduledTest;
-  if (req.body.testSuiteID.length === 1) {
-    scheduledTest = await singleTestSuiteSched(req, req.body.testSuiteID[0]);
+  let message = null;
+  if (testSuiteIDs.length === 1) {
+    const id = req.body.testSuiteID[0];
+    scheduledTest = await singleTestSuiteSched(req, id);
+    if (scheduledTest) {
+      message = `Test suite with ID ${id} was successfully scheduled.`;
+    }
   } else {
-    scheduledTest = await massSchedule(req, req.body.testSuiteID);
+    const testSuites = await TestSuiteModel.find({ _id: testSuiteIDs });
+    const results = compareArrays(testSuites, testSuiteIDs);
+    if (results.present.length === 0) {
+      return next(
+        new AppError(`Test Suite ID's ${testSuiteIDs} do not exist`, 404)
+      );
+    }
+    scheduledTest = await massSchedule(req, results.present);
+    if (results.notPresent.length > 0) {
+      message = `Test suite/s with ID ${results.present} was successfully scheduled. And Test Suite/s with ID ${results.notPresent} was not scheduled because they no longer exists.`;
+    } else {
+      message = `Test suite/s with ID ${results.present} was successfully scheduled.`;
+    }
   }
 
   res.status(201).json({
     status: 'success',
     statusCode: 201,
-    data: { scheduledTest }
+    message
   });
 });
 
 // GOOD
 exports.updateScheduledTestSuite = catchAsync(async (req, res, next) => {
+  validateObjectId(req.body.scheduleTestSuiteID);
   const params = Object.keys(req.body);
-  let message = '';
   params.forEach(key => {
     if (immutableSTSParams.includes(key)) {
-      message += ` ${key} is not modifiable.`;
       delete req.body[key];
     }
   });
   const { scheduleTestSuiteID } = req.body;
   delete req.body.scheduleTestSuiteID;
-  const updatedTestSuite = await ScheduledTestSuitesModel.findByIdAndUpdate(
+  await ScheduledTestSuitesModel.findByIdAndUpdate(
     scheduleTestSuiteID,
     req.body,
     { new: true, runValidators: true }
@@ -128,12 +153,12 @@ exports.updateScheduledTestSuite = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     statusCode: 200,
-    message,
-    data: { updatedTestSuite }
+    message: `Test suite with ID ${scheduleTestSuiteID} was successfully updated.`
   });
 });
 
 const singleDelete = async (id, req, next) => {
+  validateObjectId(id);
   const deletedScheduledTestSuite = await ScheduledTestSuitesModel.findByIdAndDelete(
     id
   );
@@ -184,12 +209,22 @@ exports.deleteScheduledTestSuite = catchAsync(async (req, res, next) => {
   }
 
   // TODO: mass deleted
-  res.status(200).json({ status: 'success', statusCode: 200 });
+  res.status(200).json({
+    status: 'success',
+    statusCode: 200,
+    message: `Scheduled test suite with ID ${scheduledTestSuiteID} was successfully deleted.`
+  });
 });
 
 // GOOD
 exports.getScheduledTestSuite = catchAsync(async (req, res, next) => {
   const queryParams = { ...req.query };
+  if (queryParams._id) {
+    validateObjectId(queryParams._id);
+  }
+  if (queryParams.testSuiteID) {
+    validateObjectId(queryParams.testSuiteID);
+  }
 
   //remove unwanted query params
   Object.keys(queryParams).forEach(key => {
@@ -200,14 +235,21 @@ exports.getScheduledTestSuite = catchAsync(async (req, res, next) => {
     return next(new AppError(`Specify a correct query parameter`, 400));
   }
   const scheduledTestSuites = await ScheduledTestSuitesModel.find(queryParams);
-  scheduledTestSuites.forEach(suite => {
-    suite.__v = undefined;
-  });
+  if (scheduledTestSuites.length === 0) {
+    return next(
+      new AppError(
+        `Scheduled Test Suite with ID ${Object.values(
+          queryParams
+        )} does not exist`,
+        404
+      )
+    );
+  }
+  remove__v(scheduledTestSuites);
   res.status(200).json({
     status: 'success',
     statusCode: 200,
     count: scheduledTestSuites.length,
-    queryParams,
     data: { scheduledTestSuites }
   });
 });
