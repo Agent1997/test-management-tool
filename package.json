@@ -23,6 +23,8 @@
   },
   "homepage": "https://github.com/Agent1997/test-management-tool#readme",
   "dependencies": {
+    "antd": "^4.5.4",
+    "bootstrap": "^4.5.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
