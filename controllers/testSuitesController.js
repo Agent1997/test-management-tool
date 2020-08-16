@@ -6,7 +6,7 @@ const AppError = require('./../utils/appError');
 const remove__v = require('./../utils/remove__v');
 const validateObjectId = require('../utils/validateObjectId');
 
-const immutable = ['version', 'creator'];
+const acceptedUpdateParams = ['title', 'status', 'priority', 'modifiedBy'];
 
 //GOOD
 exports.createTestSuite = catchAsync(async (req, res, next) => {
@@ -37,13 +37,19 @@ exports.updateTestSuite = catchAsync(async (req, res, next) => {
   if (params.length === 0) {
     return next(new AppError('Payload is empty', 400));
   }
-  let message;
   params.forEach(key => {
-    if (immutable.includes(key)) {
-      message += ` ${key} is not modifiable.`;
+    if (!acceptedUpdateParams.includes(key)) {
       delete req.body[key];
     }
   });
+
+  if (Object.keys(req.body).length === 0) {
+    return next(
+      new AppError(
+        `The fields you are tring to update are immutable or does not exists`
+      )
+    );
+  }
 
   const existenceCheck = await TestSuiteModel.findById(req.params.id);
   if (!existenceCheck) {
@@ -62,7 +68,7 @@ exports.updateTestSuite = catchAsync(async (req, res, next) => {
   //setting __v to undefined to hide in from the response. This is not persisted to DB
   remove__v(suite);
 
-  message = `Test Suite with id ${req.params.id} has been successfully updated`;
+  const message = `Test Suite with id ${req.params.id} has been successfully updated`;
 
   res.status(200).json({
     status: 'success',
