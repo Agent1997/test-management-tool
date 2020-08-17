@@ -46,7 +46,8 @@ exports.updateTestSuite = catchAsync(async (req, res, next) => {
   if (Object.keys(req.body).length === 0) {
     return next(
       new AppError(
-        `The fields you are tring to update are immutable or does not exists`
+        `The fields you are tring to update are immutable or does not exists`,
+        400
       )
     );
   }
