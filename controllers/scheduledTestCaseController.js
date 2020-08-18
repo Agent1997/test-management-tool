@@ -14,6 +14,9 @@ const immutable = [
 const acceptedGetParams = ['scheduledTestSuiteID'];
 // GOOD
 exports.updateScheduledTestCase = catchAsync(async (req, res, next) => {
+  if (Object.keys(req.body).length === 0 && req.body.constructor === Object) {
+    return next(new AppError(`Request Body is empty`, 400));
+  }
   const params = Object.keys(req.body);
   let message = '';
   params.forEach(key => {

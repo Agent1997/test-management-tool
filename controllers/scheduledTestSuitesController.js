@@ -34,13 +34,13 @@ const acceptedTCParams = [
 const immutableSTSParams = ['testSuiteID', 'scheduledBy'];
 const acceptedGetParams = [
   'testSuiteID',
-  'milestone',
-  'type',
-  'status',
-  'testerName',
-  'scheduledBy',
-  'modifiedBy',
-  'priority',
+  // 'milestone',
+  // 'type',
+  // 'status',
+  // 'testerName',
+  // 'scheduledBy',
+  // 'modifiedBy',
+  // 'priority',
   '_id'
 ];
 const createIndTestCase = catchAsync(async (testSuiteObj, testCases) => {
