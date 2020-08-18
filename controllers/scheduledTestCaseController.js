@@ -18,7 +18,7 @@ exports.updateScheduledTestCase = catchAsync(async (req, res, next) => {
     return next(new AppError(`Request Body is empty`, 400));
   }
   const params = Object.keys(req.body);
-  let message = '';
+  let message = 'null';
   params.forEach(key => {
     if (immutable.includes(key)) {
       message += ` ${key} is not modifiable.`;
