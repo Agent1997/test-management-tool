@@ -104,6 +104,12 @@ exports.scheduleTest = catchAsync(async (req, res, next) => {
   if (Object.keys(req.body).length === 0 && req.body.constructor === Object) {
     return next(new AppError(`Request Body is empty`, 400));
   }
+
+  if (!req.body.testSuiteID) {
+    return next(new AppError(`Test suite ID is a required parameter`, 400));
+  }
+
+  const scheduledTestIDs = [];
   const testSuiteIDs = req.body.testSuiteID;
   let scheduledTest;
   let message = null;
@@ -113,6 +119,8 @@ exports.scheduleTest = catchAsync(async (req, res, next) => {
     if (scheduledTest) {
       message = `Test suite with ID ${id} was successfully scheduled.`;
     }
+    const { testSuiteID, _id } = scheduledTest;
+    scheduledTestIDs.push({ testSuiteID, scheduledTestId: _id });
   } else {
     const testSuites = await TestSuiteModel.find({ _id: testSuiteIDs });
     const results = compareArrays(testSuites, testSuiteIDs);
@@ -122,6 +130,11 @@ exports.scheduleTest = catchAsync(async (req, res, next) => {
       );
     }
     scheduledTest = await massSchedule(req, results.present);
+    scheduledTest.forEach(el => {
+      const { testSuiteID, _id } = el;
+      scheduledTestIDs.push({ testSuiteID, scheduledTestId: _id });
+    });
+
     if (results.notPresent.length > 0) {
       message = `Test suite/s with ID ${results.present} was successfully scheduled. And Test Suite/s with ID ${results.notPresent} was not scheduled because they no longer exists.`;
     } else {
@@ -132,7 +145,8 @@ exports.scheduleTest = catchAsync(async (req, res, next) => {
   res.status(201).json({
     status: 'success',
     statusCode: 201,
-    message
+    message,
+    scheduledTestIDs
   });
 });
 
