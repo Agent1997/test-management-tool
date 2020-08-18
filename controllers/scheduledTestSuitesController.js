@@ -152,6 +152,9 @@ exports.scheduleTest = catchAsync(async (req, res, next) => {
 
 // GOOD
 exports.updateScheduledTestSuite = catchAsync(async (req, res, next) => {
+  if (Object.keys(req.body).length === 0 && req.body.constructor === Object) {
+    return next(new AppError(`Request Body is empty`, 400));
+  }
   // Can only support single update
   validateObjectId(req.body.scheduleTestSuiteID[0]);
   const params = Object.keys(req.body);
