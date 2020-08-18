@@ -152,7 +152,8 @@ exports.scheduleTest = catchAsync(async (req, res, next) => {
 
 // GOOD
 exports.updateScheduledTestSuite = catchAsync(async (req, res, next) => {
-  validateObjectId(req.body.scheduleTestSuiteID);
+  // Can only support single update
+  validateObjectId(req.body.scheduleTestSuiteID[0]);
   const params = Object.keys(req.body);
   params.forEach(key => {
     if (immutableSTSParams.includes(key)) {
@@ -161,11 +162,20 @@ exports.updateScheduledTestSuite = catchAsync(async (req, res, next) => {
   });
   const { scheduleTestSuiteID } = req.body;
   delete req.body.scheduleTestSuiteID;
-  await ScheduledTestSuitesModel.findByIdAndUpdate(
-    scheduleTestSuiteID,
+  const updated = await ScheduledTestSuitesModel.findByIdAndUpdate(
+    scheduleTestSuiteID[0],
     req.body,
     { new: true, runValidators: true }
   );
+
+  if (!updated) {
+    return next(
+      new AppError(
+        `Scheduled test suite with ID ${scheduleTestSuiteID[0]} does not exist`,
+        404
+      )
+    );
+  }
 
   res.status(200).json({
     status: 'success',
