@@ -101,6 +101,9 @@ const massSchedule = catchAsync(async (req, testSuiteID) => {
 
 // GOOD
 exports.scheduleTest = catchAsync(async (req, res, next) => {
+  if (Object.keys(req.body).length === 0 && req.body.constructor === Object) {
+    return next(new AppError(`Request Body is empty`, 400));
+  }
   const testSuiteIDs = req.body.testSuiteID;
   let scheduledTest;
   let message = null;
