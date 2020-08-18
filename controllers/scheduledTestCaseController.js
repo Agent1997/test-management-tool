@@ -90,7 +90,7 @@ exports.deleteScheduledTestCase = catchAsync(async (req, res, next) => {
     if (id == scheduledTestCaseID) return id; // had to use loose equality here to type diff
   });
 
-  const updatedTestSuite = await ScheduledTestSuitesModel.findByIdAndUpdate(
+  await ScheduledTestSuitesModel.findByIdAndUpdate(
     scheduledTestSuiteID,
     { testCases: scheduledTestSuite.testCases },
     { new: true, runValidators: true }
@@ -98,8 +98,7 @@ exports.deleteScheduledTestCase = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    statusCode: 200,
-    data: { updatedTestSuite }
+    statusCode: 200
   });
 });
 
