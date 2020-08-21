@@ -27,9 +27,6 @@ exports.createTestCases = catchAsync(async (req, res, next) => {
 
 // GOOD
 exports.getAllTestCase = catchAsync(async (req, res, next) => {
-  if (Object.keys(req.body).length === 0 && req.body.constructor === Object) {
-    return next(new AppError(`Request Body is empty`, 400));
-  }
   validateObjectId(req.params.tsID);
   const query = TestCase.find({ testSuiteID: req.params.tsID });
   const testCases = await query;
