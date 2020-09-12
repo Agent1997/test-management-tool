@@ -99,7 +99,8 @@ exports.deleteScheduledTestCase = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    statusCode: 200
+    statusCode: 200,
+    message: 'Scheduled Test Case was succesfully deleted'
   });
 });
 
