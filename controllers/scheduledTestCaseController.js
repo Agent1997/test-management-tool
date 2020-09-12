@@ -3,6 +3,7 @@ const ScheduledTestCasesModel = require('./../models/scheduledTestCasesModel');
 const ScheduledTestSuitesModel = require('./../models/scheduledTestSuitesModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const remove__v = require('../utils/remove__v');
 
 const immutable = [
   'scheduledBy',
@@ -115,6 +116,8 @@ exports.getScheduledTestCases = catchAsync(async (req, res, next) => {
   }
 
   const testCases = await ScheduledTestCasesModel.find(queryParams);
+  remove__v(testCases);
+
   res.status(200).json({
     status: 'success',
     statusCode: 200,
